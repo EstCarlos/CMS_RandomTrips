@@ -1,0 +1,370 @@
+# Prompt para Figma Make — Data mock real (alineada al schema del CMS Random Trips)
+
+> Copia y pega todo lo de abajo en Figma Make. La data está mapeada al modelo de entidades del proyecto (Tour / TourDetails / ServiceCatalog / Destination / Experience / Availability / MediaAsset / Page / SiteConfig), pricing como discriminated union, moneda base **DOP** y campos bilingües ES/EN.
+
+---
+
+## 🎯 Objetivo
+
+Elimina **toda** la data mock / placeholder actual del CMS (tours genéricos tipo "Playa Frontón", testimonios de relleno, precios inventados, imágenes de prueba) y reemplázala por la data **real** de dos tours actuales de Random Trips, respetando el esquema de entidades existente. La meta es ver el CMS y la web pública renderizando contenido realista, como si fuera data publicada de verdad.
+
+**Reglas:**
+- Borra primero, inserta después. No mezcles data vieja con nueva.
+- Respeta los nombres de campos del modelo existente. La data de abajo ya usa esos nombres.
+- Moneda base de almacenamiento: **DOP**. El selector de moneda hace la conversión en runtime.
+- Inserta las entidades en orden de dependencia: `SiteConfig` → `ServiceCatalog` → `Destination` → `Experience` → `MediaAsset` → `Tour` → `Availability` → `Page`.
+
+---
+
+## 1️⃣ SiteConfig (singleton)
+
+```json
+{
+  "site_config": {
+    "contacto": {
+      "whatsapp": "+1 (849) 589-2057",
+      "email": "info@randomtrips.co"
+    },
+    "redes": {
+      "instagram": "@randomtrips.co"
+    },
+    "tasas_cambio": { "base": "DOP", "USD": 0.0167, "EUR": 0.0155 },
+    "builder_margin_multiplier": 1.35,
+    "punto_salida_default": {
+      "nombre": "Bon Plaza Paraíso",
+      "direccion": "Av. Winston Churchill, Santo Domingo",
+      "maps": "https://share.google/ic18n9Gy6v6j9NLjL"
+    },
+    "payment_info": {
+      "banco": "Banreservas",
+      "titular": "RANDOM TRIPS S.R.L.",
+      "tipo_cuenta": "Cuenta corriente",
+      "numero_cuenta": "9609086703",
+      "rnc": "133540118",
+      "deposito_fijo_default": 1000,
+      "nota_deposito": "Este monto de apartado no es reembolsable."
+    }
+  }
+}
+```
+> ⚠️ `payment_info` y `punto_salida_default` son extensiones a SiteConfig (ver nota al final).
+
+---
+
+## 2️⃣ ServiceCatalog (catálogo global de servicios)
+
+```json
+{
+  "service_catalog": [
+    { "id": "svc-transporte", "nombre_es": "Transporte ida y vuelta en bus", "nombre_en": "Round-trip bus transport", "icono": "bus", "categoria": "transporte", "orden": 1 },
+    { "id": "svc-cafe-agua", "nombre_es": "Café y agua", "nombre_en": "Coffee and water", "icono": "coffee", "categoria": "alimentacion", "orden": 2 },
+    { "id": "svc-almuerzo", "nombre_es": "Almuerzo típico", "nombre_en": "Typical lunch", "icono": "utensils", "categoria": "alimentacion", "orden": 3 },
+    { "id": "svc-staff", "nombre_es": "Asistencia del staff", "nombre_en": "Staff assistance", "icono": "users", "categoria": "guia", "orden": 4 },
+    { "id": "svc-guia", "nombre_es": "Guías experimentados", "nombre_en": "Experienced guides", "icono": "compass", "categoria": "guia", "orden": 5 },
+    { "id": "svc-entradas", "nombre_es": "Entradas / accesos", "nombre_en": "Entry / access fees", "icono": "ticket", "categoria": "impuestos", "orden": 6 },
+    { "id": "svc-chaleco", "nombre_es": "Chalecos salvavidas", "nombre_en": "Life vests", "icono": "life-buoy", "categoria": "seguridad", "orden": 7 },
+    { "id": "svc-fotos", "nombre_es": "Fotografías y videos", "nombre_en": "Photos and videos", "icono": "camera", "categoria": "extras", "orden": 8 }
+  ]
+}
+```
+
+---
+
+## 3️⃣ Destinations
+
+```json
+{
+  "destinations": [
+    {
+      "id": "dest-santiago",
+      "slug": "santiago",
+      "nombre_es": "Santiago",
+      "nombre_en": "Santiago",
+      "descripcion_es": "Corazón del Cibao y puerta a la Cordillera Septentrional, hogar del Pico Diego de Ocampo.",
+      "descripcion_en": "Heart of the Cibao and gateway to the Cordillera Septentrional, home of Pico Diego de Ocampo.",
+      "ubicacion_geo": { "lat": 19.4517, "lng": -70.6970 },
+      "estado": "publicado"
+    },
+    {
+      "id": "dest-bonao",
+      "slug": "bonao",
+      "nombre_es": "Bonao",
+      "nombre_en": "Bonao",
+      "descripcion_es": "Municipio de Monseñor Nouel, conocido por sus saltos y naturaleza exuberante.",
+      "descripcion_en": "Town in Monseñor Nouel province, known for its waterfalls and lush nature.",
+      "ubicacion_geo": { "lat": 18.9367, "lng": -70.4083 },
+      "estado": "publicado"
+    },
+    {
+      "id": "dest-barahona",
+      "slug": "barahona",
+      "nombre_es": "Barahona",
+      "nombre_en": "Barahona",
+      "descripcion_es": "Región sur de aguas cristalinas, ríos turquesa y paisajes vírgenes.",
+      "descripcion_en": "Southern region of crystal-clear waters, turquoise rivers and pristine landscapes.",
+      "ubicacion_geo": { "lat": 18.2085, "lng": -71.1008 },
+      "estado": "publicado"
+    }
+  ]
+}
+```
+
+---
+
+## 4️⃣ Experiences (1:N con Destination)
+
+> `precio_base` es el valor usado por el builder. Para tours fijos no afecta el precio de venta; los valores aquí son estimados — ajústalos según costos reales.
+
+```json
+{
+  "experiences": [
+    {
+      "id": "exp-pico-diego",
+      "destination_id": "dest-santiago",
+      "nombre_es": "Pico Diego de Ocampo",
+      "nombre_en": "Pico Diego de Ocampo",
+      "descripcion_es": "Senderismo hasta el monumento natural de la Cordillera Septentrional para ver el amanecer.",
+      "descripcion_en": "Hike to the Cordillera Septentrional natural monument to watch the sunrise.",
+      "tipo": "montaña",
+      "duracion_estimada": "4-5 horas",
+      "precio_base": 950,
+      "estado": "publicado"
+    },
+    {
+      "id": "exp-salto-jima",
+      "destination_id": "dest-bonao",
+      "nombre_es": "Salto de Jima",
+      "nombre_en": "Salto de Jima",
+      "descripcion_es": "Cascada y balneario natural en Bonao para refrescarse tras el senderismo.",
+      "descripcion_en": "Waterfall and natural pool in Bonao to cool off after the hike.",
+      "tipo": "aventura",
+      "duracion_estimada": "2-3 horas",
+      "precio_base": 850,
+      "estado": "publicado"
+    },
+    {
+      "id": "exp-balneario-la-plaza",
+      "destination_id": "dest-barahona",
+      "nombre_es": "Balneario La Plaza",
+      "nombre_en": "Balneario La Plaza",
+      "descripcion_es": "El río más cristalino de RD: agua turquesa, charcos y trayecto guiado con chaleco.",
+      "descripcion_en": "The most crystal-clear river in the DR: turquoise water, pools and a guided route with life vests.",
+      "tipo": "aventura",
+      "duracion_estimada": "4-5 horas",
+      "precio_base": 2200,
+      "estado": "publicado"
+    }
+  ]
+}
+```
+
+---
+
+## 5️⃣ MediaAssets (galería)
+
+> Las dos URLs reales son las imágenes `og:image` de los formularios (estables). El resto son placeholders — conserva los `alt`.
+
+```json
+{
+  "media_assets": [
+    { "id": "media-pico-1", "tipo": "imagen", "url": "https://lh6.googleusercontent.com/5J4UpaCBBGrnvdMF64IJtvE6HifElCRfnrbIkwiaVz-VXHVKlrh4gGJT-l69Pyk0JTE8YCe103tItnI=w1200-h630-p", "thumb_url": "", "alt_es": "Amanecer en el Pico Diego de Ocampo", "alt_en": "Sunrise at Pico Diego de Ocampo", "asociaciones": ["tour-pico-diego-salto-jima"] },
+    { "id": "media-pico-2", "tipo": "imagen", "url": "", "thumb_url": "", "alt_es": "Vista panorámica del Pico Diego de Ocampo", "alt_en": "Panoramic view of Pico Diego de Ocampo", "asociaciones": ["tour-pico-diego-salto-jima"] },
+    { "id": "media-jima-1", "tipo": "imagen", "url": "", "thumb_url": "", "alt_es": "Salto de Jima, Bonao", "alt_en": "Salto de Jima, Bonao", "asociaciones": ["tour-pico-diego-salto-jima"] },
+    { "id": "media-plaza-1", "tipo": "imagen", "url": "https://lh3.googleusercontent.com/z1sLSG2iMSioQ4wGvTucuPkGmtIRUrPZV9-vWQlxDXAAEtRbdyd8INtROPw061qfIx4mpVMbygVe9nc=w1200-h630-p", "thumb_url": "", "alt_es": "Aguas turquesa del Balneario La Plaza", "alt_en": "Turquoise waters of Balneario La Plaza", "asociaciones": ["tour-balneario-la-plaza"] },
+    { "id": "media-plaza-2", "tipo": "imagen", "url": "", "thumb_url": "", "alt_es": "Charcos cristalinos en la ruta de La Plaza", "alt_en": "Crystal-clear pools along the La Plaza route", "asociaciones": ["tour-balneario-la-plaza"] }
+  ]
+}
+```
+
+---
+
+## 6️⃣ Tours
+
+```json
+{
+  "tours": [
+    {
+      "id": "tour-pico-diego-salto-jima",
+      "slug": "pico-diego-de-ocampo-salto-de-jima",
+      "titulo_es": "Pico Diego de Ocampo + Salto de Jima",
+      "titulo_en": "Pico Diego de Ocampo + Salto de Jima",
+      "descripcion_es": "Pico Diego de Ocampo + Salto de Jima — Aventura, senderismo y un amanecer indescriptible. El tesoro oculto de la Cordillera Septentrional. Embárcate en esta aventura y descubre la belleza que lo rodea.",
+      "descripcion_en": "Pico Diego de Ocampo + Salto de Jima — Adventure, hiking and an indescribable sunrise. The hidden treasure of the Cordillera Septentrional. Embark on this adventure and discover the beauty around it.",
+      "tipo": "fijo",
+      "destinos_ids": ["dest-santiago", "dest-bonao"],
+      "experiencias_ids": ["exp-pico-diego", "exp-salto-jima"],
+      "pricing_model": {
+        "type": "fixed_per_person",
+        "price_per_person": 1900,
+        "currency": "DOP"
+      },
+      "capacidad_max": 40,
+      "deposito_porcentaje": 53,
+      "deposito_monto_fijo": 1000,
+      "included_services": [
+        { "service_id": "svc-transporte", "included": true },
+        { "service_id": "svc-cafe-agua", "included": true },
+        { "service_id": "svc-staff", "included": true },
+        { "service_id": "svc-entradas", "included": true, "custom_note": "Entrada al Salto de Jima" },
+        { "service_id": "svc-fotos", "included": true },
+        { "service_id": "svc-almuerzo", "included": false },
+        { "service_id": "svc-chaleco", "included": false }
+      ],
+      "details": {
+        "duracion": "Full Day (1 día)",
+        "idiomas": ["Español"],
+        "cuando_reservar": "Reservar hasta el 10 de Julio · Pago total el 13 de Julio",
+        "tipo_bono": "electrónico",
+        "accesibilidad": "No apto para movilidad reducida (sendero de montaña)",
+        "mascotas_permitidas": false,
+        "edad_minima": null,
+        "dificultad": "Moderada-Alta",
+        "sostenibilidad_nota": "Usa protector solar Reef safe y respeta el entorno natural."
+      },
+      "galeria_ids": ["media-pico-1", "media-pico-2", "media-jima-1"],
+      "operador_id": "op-randomtrips",
+      "estado": "publicado",
+      "logistica": {
+        "punto_salida": "Bon Plaza Paraíso, Av. Winston Churchill, Santo Domingo",
+        "hora_salida": "2:30 A.M (puntual)",
+        "maps": "https://share.google/ic18n9Gy6v6j9NLjL"
+      }
+    },
+    {
+      "id": "tour-balneario-la-plaza",
+      "slug": "balneario-la-plaza-barahona",
+      "titulo_es": "Balneario La Plaza",
+      "titulo_en": "Balneario La Plaza",
+      "descripcion_es": "Nos vamos a descubrir la magia del Balneario La Plaza en Barahona, el río más cristalino de República Dominicana. Agua turquesa, naturaleza y aventura en un solo lugar.",
+      "descripcion_en": "We're heading out to discover the magic of Balneario La Plaza in Barahona, the most crystal-clear river in the Dominican Republic. Turquoise water, nature and adventure in one place.",
+      "tipo": "fijo",
+      "destinos_ids": ["dest-barahona"],
+      "experiencias_ids": ["exp-balneario-la-plaza"],
+      "pricing_model": {
+        "type": "fixed_per_person",
+        "price_per_person": 3200,
+        "currency": "DOP"
+      },
+      "capacidad_max": 40,
+      "deposito_porcentaje": 31,
+      "deposito_monto_fijo": 1000,
+      "included_services": [
+        { "service_id": "svc-transporte", "included": true },
+        { "service_id": "svc-cafe-agua", "included": true },
+        { "service_id": "svc-almuerzo", "included": true, "custom_note": "Almuerzo típico" },
+        { "service_id": "svc-chaleco", "included": true },
+        { "service_id": "svc-guia", "included": true },
+        { "service_id": "svc-staff", "included": true },
+        { "service_id": "svc-fotos", "included": true },
+        { "service_id": "svc-entradas", "included": false }
+      ],
+      "details": {
+        "duracion": "Full Day (1 día)",
+        "idiomas": ["Español"],
+        "cuando_reservar": "Reservar hasta el 10 de Junio · Pago total el 16 de Junio",
+        "tipo_bono": "electrónico",
+        "accesibilidad": "Requiere caminar y nadar en el trayecto; uso obligatorio de chaleco salvavidas",
+        "mascotas_permitidas": false,
+        "edad_minima": null,
+        "dificultad": "Moderada",
+        "sostenibilidad_nota": "Usa protector solar Reef safe y cuida el río y su entorno."
+      },
+      "galeria_ids": ["media-plaza-1", "media-plaza-2"],
+      "operador_id": "op-randomtrips",
+      "estado": "publicado",
+      "logistica": {
+        "punto_salida": "Bon Plaza Paraíso, Av. Winston Churchill, Santo Domingo",
+        "hora_salida": "5:30 A.M (puntual)",
+        "maps": "https://share.google/ic18n9Gy6v6j9NLjL"
+      }
+    }
+  ]
+}
+```
+
+---
+
+## 7️⃣ Availability (fechas reales de cada tour)
+
+```json
+{
+  "availability": [
+    {
+      "tour_id": "tour-pico-diego-salto-jima",
+      "fecha": "2025-07-19",
+      "cupos_totales": 40,
+      "cupos_reservados": 23,
+      "estado": "abierto",
+      "precio_override": null
+    },
+    {
+      "tour_id": "tour-balneario-la-plaza",
+      "fecha": "2025-06-21",
+      "cupos_totales": 40,
+      "cupos_reservados": 31,
+      "estado": "abierto",
+      "precio_override": null
+    }
+  ]
+}
+```
+
+---
+
+## 8️⃣ Pages (políticas y normas — globales)
+
+```json
+{
+  "pages": [
+    {
+      "id": "page-politicas-cancelacion",
+      "slug": "politicas-de-cancelacion",
+      "titulo_es": "Políticas de Cancelación",
+      "titulo_en": "Cancellation Policies",
+      "contenido_es": "Si no puede asistir tras reservar o pagar el viaje completo: 1) Buscar un reemplazo notificando con 3 días de anticipación. 2) No se permiten cambios el mismo día. 3) Si solo reservó y no tiene reemplazo, el monto no es transferible ni reembolsable. 4) Si pagó completo y notificó antes de la fecha límite sin reemplazo, pierde la reserva y se reembolsa la diferencia. 5) Si pagó completo y notifica después de la fecha límite sin reemplazo, pierde todo el pago. 6) Si reservó más de un lugar y una persona no asiste, debe reemplazarse; su reserva no es transferible al monto restante. 7) Si vence la fecha límite sin completar el pago, su lugar se libera. 8) Hay lista de espera para ayudar con cambios. 9) Por fuerza mayor (clima/situación) que obligue a suspender, si no puede asistir a la nueva fecha ni le interesa otro viaje, se reembolsa completo.",
+      "contenido_en": "If you cannot attend after booking or paying in full: 1) Find a replacement, notifying 3 days in advance. 2) No same-day changes allowed. 3) If you only paid the deposit and have no replacement, the amount is non-transferable and non-refundable. 4) If you paid in full and notified before the deadline without a replacement, you lose the deposit and the difference is refunded. 5) If you paid in full and notify after the deadline without a replacement, you lose the full payment. 6) If you booked more than one spot and someone can't attend, they must be replaced; their deposit is not transferable to the remaining balance. 7) If the payment deadline passes without full payment, your spot is released. 8) A waitlist is available to help with changes. 9) For force majeure (weather/situational) requiring suspension, if you can't attend the new date and aren't interested in another trip, a full refund is issued."
+    },
+    {
+      "id": "page-normas-tour",
+      "slug": "normas-del-tour",
+      "titulo_es": "Normas del Tour",
+      "titulo_en": "Tour Rules",
+      "contenido_es": "No se permite el uso de vapes ni cigarrillos dentro de la guagua. La guagua no realiza paradas adicionales: salida y llegada solo en el punto de encuentro. Las bebidas alcohólicas deben consumirse con precaución. La música será de agrado general, evitando contenido obsceno. Se exige respeto al personal, guías y demás clientes durante todo el recorrido y en los grupos de WhatsApp. Cualquier incumplimiento puede resultar en cancelación de la participación sin remuneración.",
+      "contenido_en": "Vapes and cigarettes are not allowed inside the bus. The bus makes no additional stops: departure and arrival only at the meeting point. Alcoholic beverages must be consumed responsibly. Music will be generally agreeable, avoiding explicit content. Respect for staff, guides and other clients is required throughout the trip and in WhatsApp groups. Any breach may result in cancellation of participation without refund."
+    },
+    {
+      "id": "page-proceso-inscripcion",
+      "slug": "proceso-de-inscripcion",
+      "titulo_es": "Proceso de Inscripción",
+      "titulo_en": "Registration Process",
+      "contenido_es": "1) Revisa toda la información del tour. 2) Llena el formulario con tus datos reales (si viajan 2+ personas, cada quien el suyo). 3) Realiza tu reserva; en el comprobante indica nombre completo + tour, y envía la captura por WhatsApp al +1 (849) 589-2057. 4) Una semana antes te agregamos al grupo de WhatsApp con los detalles finales.",
+      "contenido_en": "1) Review all tour information. 2) Fill out the form with your real data (if 2+ people travel, each fills their own). 3) Make your reservation; on the receipt write your full name + tour, and send the screenshot via WhatsApp to +1 (849) 589-2057. 4) One week before, we'll add you to the WhatsApp group with final details."
+    }
+  ]
+}
+```
+
+---
+
+## 🛠️ Instrucciones de inserción
+
+1. Borra todos los registros mock previos de Tours, Experiences, Destinations, Testimonials, MediaAssets y Availability de prueba.
+2. Crea/actualiza el `SiteConfig` singleton.
+3. Inserta en orden: ServiceCatalog → Destinations → Experiences → MediaAssets → Tours → Availability → Pages.
+4. Para imágenes con `url: ""`, usa placeholders del proyecto coherentes con cada tour (montaña/río) conservando los `alt`.
+5. Verifica que el detalle de tour rendericé los 4 bloques del diseño: hero/flyer (precio + fecha desde Availability), "Tour Incluye" (grid check/equis desde `included_services`), "Detalles" (desde `details`) y "Lo que vamos a conocer" (desde `experiencias_ids`).
+6. Formato de precio en UI: `RD$1,900` y `RD$3,200`; depósito: `RD$1,000 p/p (no reembolsable)`.
+
+---
+
+## ⚠️ Campos que NO existen en el schema actual (decisión tuya)
+
+Mapeé la data real lo más fiel posible, pero estos 4 puntos requieren que decidas si extender el modelo:
+
+1. **Depósito fijo vs. porcentaje.** Random Trips cobra **RD$1,000 fijo** por persona, no un porcentaje. Tu `Tour` usa `deposito_porcentaje`. Dejé ambos: `deposito_porcentaje` (53% / 31%, calculado) y un campo nuevo `deposito_monto_fijo: 1000`. **Recomendación:** soportar depósito fijo además del porcentual, porque el negocio opera con monto fijo.
+
+2. **Logística de salida (`logistica`).** `hora_salida` y `punto_salida` varían por tour (2:30 vs 5:30 A.M) y no existen en el modelo. Los metí en un bloque `logistica` dentro de Tour. **Recomendación:** moverlo a `Availability` si una misma ruta puede tener horas distintas por fecha; si la hora es constante por tour, déjalo en Tour/TourDetails.
+
+3. **`SiteConfig.payment_info` y `punto_salida_default`.** Los datos bancarios para depósitos (Banreservas, cuenta, RNC) no están en el modelo. Los agregué a SiteConfig. **Recomendación:** añadir `payment_info` al singleton SiteConfig.
+
+4. **`grupo_whatsapp` por tour.** El form de Pico Diego trae link de grupo de WhatsApp; el de La Plaza no. No hay campo para esto. Si quieres mostrar "únete al grupo" en el detalle, agrega un campo `grupo_whatsapp_url` opcional al Tour. (Link real Pico Diego: `https://chat.whatsapp.com/LBP6kOvni3t2ubzKnlkZEv?mode=gi_t`.)

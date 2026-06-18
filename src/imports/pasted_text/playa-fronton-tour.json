@@ -1,0 +1,273 @@
+# Prompt para Figma Make — Tour 4: Playa Frontón (Samaná) (data mock)
+
+> Pega esto en Figma Make después de los prompts anteriores. Agrega un cuarto tour real de Random Trips (edición pasada / completada), alineado al schema del CMS. Moneda base DOP, campos ES/EN.
+
+---
+
+## 1. ServiceCatalog — servicio nuevo a agregar
+
+```json
+{
+  "service_catalog_add": [
+    { "id": "svc-snacks", "nombre_es": "Snacks", "nombre_en": "Snacks", "icono": "cookie", "categoria": "alimentacion", "orden": 10 }
+  ]
+}
+```
+
+---
+
+## 2. Destination
+
+```json
+{
+  "destinations_add": [
+    {
+      "id": "dest-samana",
+      "slug": "samana",
+      "nombre_es": "Samaná",
+      "nombre_en": "Samaná",
+      "descripcion_es": "Península del noreste famosa por sus playas vírgenes, cocoteros y aguas turquesa, hogar de Playa Frontón.",
+      "descripcion_en": "Northeastern peninsula famous for its pristine beaches, palm trees and turquoise waters, home of Playa Frontón.",
+      "ubicacion_geo": { "lat": 19.2056, "lng": -69.3367 },
+      "estado": "publicado"
+    }
+  ]
+}
+```
+
+---
+
+## 3. Experiences (1:N con Samaná)
+
+> `precio_base` estimado para el builder; ajusta según costos reales.
+
+```json
+{
+  "experiences_add": [
+    {
+      "id": "exp-playa-las-galeras",
+      "destination_id": "dest-samana",
+      "nombre_es": "Playa Las Galeras",
+      "nombre_en": "Las Galeras Beach",
+      "descripcion_es": "Punto de partida costero hacia las playas escondidas de Samaná.",
+      "descripcion_en": "Coastal starting point toward Samaná's hidden beaches.",
+      "tipo": "playa",
+      "duracion_estimada": "45 min",
+      "precio_base": 600,
+      "estado": "publicado"
+    },
+    {
+      "id": "exp-cueva-elefante",
+      "destination_id": "dest-samana",
+      "nombre_es": "Vista: La Cueva del Elefante",
+      "nombre_en": "Viewpoint: The Elephant Cave",
+      "descripcion_es": "Mirador hacia la imponente formación rocosa conocida como La Cueva del Elefante.",
+      "descripcion_en": "Viewpoint over the striking rock formation known as The Elephant Cave.",
+      "tipo": "naturaleza",
+      "duracion_estimada": "30 min",
+      "precio_base": 0,
+      "estado": "publicado"
+    },
+    {
+      "id": "exp-piscina-natural",
+      "destination_id": "dest-samana",
+      "nombre_es": "Piscina Natural",
+      "nombre_en": "Natural Pool",
+      "descripcion_es": "Piscina natural de aguas calmadas y cristalinas para nadar y relajarse.",
+      "descripcion_en": "Calm, crystal-clear natural pool to swim and relax.",
+      "tipo": "playa",
+      "duracion_estimada": "1 hora",
+      "precio_base": 700,
+      "estado": "publicado"
+    },
+    {
+      "id": "exp-playa-madama",
+      "destination_id": "dest-samana",
+      "nombre_es": "Playa Madama",
+      "nombre_en": "Madama Beach",
+      "descripcion_es": "Pequeña playa resguardada entre acantilados y vegetación.",
+      "descripcion_en": "Small sheltered beach tucked between cliffs and greenery.",
+      "tipo": "playa",
+      "duracion_estimada": "1 hora",
+      "precio_base": 700,
+      "estado": "publicado"
+    },
+    {
+      "id": "exp-playa-aserradero",
+      "destination_id": "dest-samana",
+      "nombre_es": "Playa del Aserradero",
+      "nombre_en": "Aserradero Beach",
+      "descripcion_es": "Playa tranquila de arena clara en el trayecto hacia Frontón.",
+      "descripcion_en": "Quiet light-sand beach along the way to Frontón.",
+      "tipo": "playa",
+      "duracion_estimada": "45 min",
+      "precio_base": 600,
+      "estado": "publicado"
+    },
+    {
+      "id": "exp-playa-fronton",
+      "destination_id": "dest-samana",
+      "nombre_es": "Playa Frontón",
+      "nombre_en": "Frontón Beach",
+      "descripcion_es": "Uno de los tesoros más imponentes de RD: acantilados, cocoteros y aguas turquesa.",
+      "descripcion_en": "One of the DR's most striking treasures: cliffs, palm trees and turquoise waters.",
+      "tipo": "playa",
+      "duracion_estimada": "2 horas",
+      "precio_base": 1200,
+      "estado": "publicado"
+    }
+  ]
+}
+```
+
+---
+
+## 4. MediaAsset
+
+> Sube el flyer y fotos a tu storage y reemplaza la `url`. Conserva los `alt`.
+
+```json
+{
+  "media_assets_add": [
+    { "id": "media-fronton-1", "tipo": "imagen", "url": "", "thumb_url": "", "alt_es": "Playa Frontón con acantilado y bote en la orilla", "alt_en": "Frontón Beach with cliff and boat on the shore", "asociaciones": ["tour-playa-fronton"] },
+    { "id": "media-fronton-2", "tipo": "imagen", "url": "", "thumb_url": "", "alt_es": "Cocoteros y aguas turquesa de Samaná", "alt_en": "Palm trees and turquoise waters of Samaná", "asociaciones": ["tour-playa-fronton"] },
+    { "id": "media-fronton-flyer", "tipo": "imagen", "url": "", "thumb_url": "", "alt_es": "Flyer Playa Frontón Samaná", "alt_en": "Playa Frontón Samaná flyer", "asociaciones": ["tour-playa-fronton"] }
+  ]
+}
+```
+
+---
+
+## 5. Tour
+
+```json
+{
+  "tours_add": [
+    {
+      "id": "tour-playa-fronton",
+      "slug": "playa-fronton-samana",
+      "titulo_es": "Playa Frontón",
+      "titulo_en": "Frontón Beach",
+      "descripcion_es": "Playa Frontón en Samaná, uno de los tesoros más imponentes de la República Dominicana. Un full day por las playas escondidas de la península: acantilados, cocoteros, piscinas naturales y aguas turquesa. ¿Te unes?",
+      "descripcion_en": "Playa Frontón in Samaná, one of the most striking treasures of the Dominican Republic. A full day across the peninsula's hidden beaches: cliffs, palm trees, natural pools and turquoise waters. Are you in?",
+      "tipo": "fijo",
+      "destinos_ids": ["dest-samana"],
+      "experiencias_ids": ["exp-playa-las-galeras", "exp-cueva-elefante", "exp-piscina-natural", "exp-playa-madama", "exp-playa-aserradero", "exp-playa-fronton"],
+      "pricing_model": {
+        "type": "fixed_per_person",
+        "price_per_person": 3500,
+        "currency": "DOP"
+      },
+      "capacidad_max": 40,
+      "deposito_porcentaje": 29,
+      "deposito_monto_fijo": 1000,
+      "included_services": [
+        { "service_id": "svc-transporte", "included": true },
+        { "service_id": "svc-snacks", "included": true },
+        { "service_id": "svc-almuerzo", "included": true, "custom_note": "Almuerzo típico en la playa" },
+        { "service_id": "svc-guia", "included": true, "custom_note": "Guía local" },
+        { "service_id": "svc-staff", "included": true },
+        { "service_id": "svc-chaleco", "included": true },
+        { "service_id": "svc-fotos", "included": true },
+        { "service_id": "svc-cafe-agua", "included": false },
+        { "service_id": "svc-desayuno", "included": false },
+        { "service_id": "svc-entradas", "included": false }
+      ],
+      "details": {
+        "duracion": "Full Day (1 día)",
+        "idiomas": ["Español"],
+        "cuando_reservar": "Cupos limitados; reserva con RD$1,000 p/p",
+        "tipo_bono": "electrónico",
+        "accesibilidad": "Incluye traslado en bote y caminata entre playas; uso de chaleco salvavidas",
+        "mascotas_permitidas": false,
+        "edad_minima": null,
+        "dificultad": "Moderada",
+        "sostenibilidad_nota": "Usa protector solar Reef safe y respeta las playas y su entorno."
+      },
+      "galeria_ids": ["media-fronton-1", "media-fronton-2", "media-fronton-flyer"],
+      "operador_id": "op-randomtrips",
+      "estado": "publicado",
+      "logistica": {
+        "punto_salida": "Bon Plaza Paraíso, Av. Winston Churchill, Santo Domingo",
+        "hora_salida": "5:00 A.M (puntual)",
+        "maps": "https://share.google/ic18n9Gy6v6j9NLjL"
+      },
+      "itinerario": [
+        "Playa Las Galeras",
+        "Vista: La Cueva del Elefante",
+        "Piscina Natural",
+        "Playa Madama",
+        "Playa del Aserradero",
+        "Playa Frontón"
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## 6. Availability (edición pasada — completada)
+
+```json
+{
+  "availability_add": [
+    {
+      "tour_id": "tour-playa-fronton",
+      "fecha": "2026-04-18",
+      "cupos_totales": 40,
+      "cupos_reservados": 40,
+      "estado": "completado",
+      "precio_override": null
+    }
+  ]
+}
+```
+> Para reofrecerlo como próximo, agrega un Availability con fecha futura y `estado: "abierto"`.
+
+---
+
+## 7. Testimonials (de la edición pasada)
+
+```json
+{
+  "testimonials_add": [
+    {
+      "id": "tst-009",
+      "cliente_nombre": "Daniela P.",
+      "tour_id": "tour-playa-fronton",
+      "contenido_es": "Playa Frontón es de otro nivel. Ver tantas playas en un solo día, con el bote y los guías, fue una experiencia increíble. Las fotos quedaron espectaculares.",
+      "contenido_en": "Playa Frontón is on another level. Seeing so many beaches in a single day, with the boat and the guides, was an incredible experience. The photos came out spectacular.",
+      "rating": 5,
+      "foto_url": "",
+      "fecha": "2026-04-19",
+      "aprobado": true,
+      "orden": 9
+    },
+    {
+      "id": "tst-010",
+      "cliente_nombre": "Miguel A.",
+      "tour_id": "tour-playa-fronton",
+      "contenido_es": "La piscina natural y Playa Madama fueron mis favoritas. Todo muy bien organizado y el almuerzo en la playa, un manjar. Repetiría sin dudarlo.",
+      "contenido_en": "The natural pool and Madama Beach were my favorites. Everything was well organized and the lunch on the beach was a treat. I'd repeat without hesitation.",
+      "rating": 5,
+      "foto_url": "",
+      "fecha": "2026-04-20",
+      "aprobado": true,
+      "orden": 10
+    }
+  ]
+}
+```
+
+---
+
+## ⚠️ Notas / decisiones
+
+1. **Contacto WhatsApp.** Este flyer (y el de La Taina) usan **+1 (809) 601-6082**; los formularios de La Plaza y Pico Diego usan **+1 (849) 589-2057**. Los flyers de Instagram apuntan al **809**, así que mi recomendación es:
+   - `SiteConfig.contacto.whatsapp = "+1 (809) 601-6082"` (principal)
+   - `SiteConfig.contacto.whatsapp_secundario = "+1 (849) 589-2057"` (reservas/formularios)
+   - Confírmame cuál usas de cara al cliente y lo dejamos fijo.
+2. **Café y agua / desayuno** no se mencionan en el flyer (solo "y otras cositas más"), por eso van como `included: false`. Ajusta si en realidad se incluyen.
+3. **Imágenes.** Sube el flyer y fotos a tu storage y rellena las `url`.
+4. **Consistencia con el modelo original.** Las 6 experiencias coinciden con las que ya estaban previstas para Playa Frontón en el modelo de datos, así que este tour valida el flujo "Lo que vamos a conocer" del detalle de tour.

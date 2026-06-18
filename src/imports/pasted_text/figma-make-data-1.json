@@ -1,0 +1,302 @@
+# Prompt para Figma Make — Testimonios, Reservas y Pagos (data mock) + corrección de fechas
+
+> Pega esto en Figma Make **después** del prompt anterior (ya cargaste Tours, Destinos, etc.). Esto llena el dashboard del CMS con clientes, reservas, pagos y testimonios realistas, y corrige las fechas de los tours.
+
+---
+
+## 🔧 0. Corrección de fechas (IMPORTANTE — aplicar primero)
+
+Las fechas de los dos tours son de **2026**, no 2025. Actualiza los registros de `Availability`:
+
+```json
+{
+  "availability_update": [
+    { "tour_id": "tour-pico-diego-salto-jima", "fecha": "2026-07-19" },
+    { "tour_id": "tour-balneario-la-plaza", "fecha": "2026-06-21" }
+  ]
+}
+```
+
+Contexto de fechas (úsalo para alertas del dashboard):
+- **Balneario La Plaza** — tour: 21 jun 2026 · reservar hasta: 10 jun 2026 · pago total: 16 jun 2026 (vence hoy).
+- **Pico Diego de Ocampo** — tour: 19 jul 2026 · reservar hasta: 10 jul 2026 · pago total: 13 jul 2026.
+
+---
+
+## 1. Customers
+
+```json
+{
+  "customers": [
+    { "id": "cust-001", "nombre": "Ana Belén Reyes", "email": "anabelen.reyes@gmail.com", "telefono": "+1 (809) 555-0142", "pais": "DO", "idioma_preferido": "es", "moneda_preferida": "DOP" },
+    { "id": "cust-002", "nombre": "Carlos Medina", "email": "carlos.medina@outlook.com", "telefono": "+1 (829) 555-0198", "pais": "DO", "idioma_preferido": "es", "moneda_preferida": "DOP" },
+    { "id": "cust-003", "nombre": "Sofía Restrepo", "email": "sofia.restrepo@gmail.com", "telefono": "+57 310 555 7721", "pais": "CO", "idioma_preferido": "es", "moneda_preferida": "USD" },
+    { "id": "cust-004", "nombre": "James Whitfield", "email": "j.whitfield@gmail.com", "telefono": "+1 (646) 555-3390", "pais": "US", "idioma_preferido": "en", "moneda_preferida": "USD" },
+    { "id": "cust-005", "nombre": "Marie Dubois", "email": "marie.dubois@orange.fr", "telefono": "+33 6 12 55 87 04", "pais": "FR", "idioma_preferido": "en", "moneda_preferida": "EUR" },
+    { "id": "cust-006", "nombre": "Lucía Fernández", "email": "lucia.fdez@gmail.com", "telefono": "+34 612 55 33 18", "pais": "ES", "idioma_preferido": "es", "moneda_preferida": "EUR" },
+    { "id": "cust-007", "nombre": "Pedro Jiménez", "email": "pedrojimenez.rd@gmail.com", "telefono": "+1 (849) 555-7765", "pais": "DO", "idioma_preferido": "es", "moneda_preferida": "DOP" }
+  ]
+}
+```
+
+---
+
+## 2. Bookings
+
+> Precios en DOP. La Plaza = 3,200/p · Pico Diego = 1,900/p · depósito fijo = 1,000/p. Mezcla intencional de estados para que el dashboard muestre KPIs y alertas.
+
+```json
+{
+  "bookings": [
+    {
+      "id": "bk-2026-001",
+      "customer_id": "cust-001",
+      "tour_id": "tour-balneario-la-plaza",
+      "fecha": "2026-06-21",
+      "pax_total": 2,
+      "pax_detalle": { "adultos": 2 },
+      "precio_total": 6400,
+      "moneda": "DOP",
+      "deposito_pagado": 6400,
+      "saldo_pendiente": 0,
+      "estado": "pagado_completo",
+      "operador_id": "op-randomtrips",
+      "builder_config": null,
+      "source": "web"
+    },
+    {
+      "id": "bk-2026-002",
+      "customer_id": "cust-003",
+      "tour_id": "tour-balneario-la-plaza",
+      "fecha": "2026-06-21",
+      "pax_total": 1,
+      "pax_detalle": { "adultos": 1 },
+      "precio_total": 3200,
+      "moneda": "DOP",
+      "deposito_pagado": 1000,
+      "saldo_pendiente": 2200,
+      "estado": "deposito_pagado",
+      "operador_id": "op-randomtrips",
+      "builder_config": null,
+      "source": "web"
+    },
+    {
+      "id": "bk-2026-003",
+      "customer_id": "cust-004",
+      "tour_id": "tour-balneario-la-plaza",
+      "fecha": "2026-06-21",
+      "pax_total": 1,
+      "pax_detalle": { "adultos": 1 },
+      "precio_total": 3200,
+      "moneda": "DOP",
+      "deposito_pagado": 1000,
+      "saldo_pendiente": 2200,
+      "estado": "saldo_vencido",
+      "operador_id": "op-randomtrips",
+      "builder_config": null,
+      "source": "web"
+    },
+    {
+      "id": "bk-2026-004",
+      "customer_id": "cust-002",
+      "tour_id": "tour-pico-diego-salto-jima",
+      "fecha": "2026-07-19",
+      "pax_total": 2,
+      "pax_detalle": { "adultos": 2 },
+      "precio_total": 3800,
+      "moneda": "DOP",
+      "deposito_pagado": 2000,
+      "saldo_pendiente": 1800,
+      "estado": "deposito_pagado",
+      "operador_id": "op-randomtrips",
+      "builder_config": null,
+      "source": "web"
+    },
+    {
+      "id": "bk-2026-005",
+      "customer_id": "cust-005",
+      "tour_id": "tour-pico-diego-salto-jima",
+      "fecha": "2026-07-19",
+      "pax_total": 1,
+      "pax_detalle": { "adultos": 1 },
+      "precio_total": 1900,
+      "moneda": "DOP",
+      "deposito_pagado": 1000,
+      "saldo_pendiente": 900,
+      "estado": "deposito_pagado",
+      "operador_id": "op-randomtrips",
+      "builder_config": null,
+      "source": "web"
+    },
+    {
+      "id": "bk-2026-006",
+      "customer_id": "cust-006",
+      "tour_id": "tour-pico-diego-salto-jima",
+      "fecha": "2026-07-19",
+      "pax_total": 1,
+      "pax_detalle": { "adultos": 1 },
+      "precio_total": 1900,
+      "moneda": "DOP",
+      "deposito_pagado": 1900,
+      "saldo_pendiente": 0,
+      "estado": "pagado_completo",
+      "operador_id": "op-randomtrips",
+      "builder_config": null,
+      "source": "web"
+    },
+    {
+      "id": "bk-2026-007",
+      "customer_id": "cust-007",
+      "tour_id": "tour-pico-diego-salto-jima",
+      "fecha": "2026-07-19",
+      "pax_total": 1,
+      "pax_detalle": { "adultos": 1 },
+      "precio_total": 1900,
+      "moneda": "DOP",
+      "deposito_pagado": 1000,
+      "saldo_pendiente": 900,
+      "estado": "deposito_pagado",
+      "operador_id": "op-randomtrips",
+      "builder_config": null,
+      "source": "web"
+    }
+  ]
+}
+```
+
+---
+
+## 3. Payments (transacciones confirmadas)
+
+```json
+{
+  "payments": [
+    { "booking_id": "bk-2026-001", "tipo": "deposito", "monto": 2000, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-001A", "estado": "completado", "fecha": "2026-06-05" },
+    { "booking_id": "bk-2026-001", "tipo": "saldo", "monto": 4400, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-001B", "estado": "completado", "fecha": "2026-06-14" },
+    { "booking_id": "bk-2026-002", "tipo": "deposito", "monto": 1000, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-002A", "estado": "completado", "fecha": "2026-06-08" },
+    { "booking_id": "bk-2026-003", "tipo": "deposito", "monto": 1000, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-003A", "estado": "completado", "fecha": "2026-06-07" },
+    { "booking_id": "bk-2026-004", "tipo": "deposito", "monto": 2000, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-004A", "estado": "completado", "fecha": "2026-06-30" },
+    { "booking_id": "bk-2026-005", "tipo": "deposito", "monto": 1000, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-005A", "estado": "completado", "fecha": "2026-07-01" },
+    { "booking_id": "bk-2026-006", "tipo": "deposito", "monto": 1000, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-006A", "estado": "completado", "fecha": "2026-06-28" },
+    { "booking_id": "bk-2026-006", "tipo": "saldo", "monto": 900, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-006B", "estado": "completado", "fecha": "2026-07-05" },
+    { "booking_id": "bk-2026-007", "tipo": "deposito", "monto": 1000, "moneda": "DOP", "paypal_txn_id": "PAYID-MOCK-007A", "estado": "completado", "fecha": "2026-07-02" }
+  ]
+}
+```
+
+---
+
+## 4. PaymentLinks (saldos por cobrar — alimentan alertas)
+
+```json
+{
+  "payment_links": [
+    { "booking_id": "bk-2026-002", "monto": 2200, "moneda": "DOP", "paypal_invoice_id": "INV-MOCK-002", "expira_en": "2026-06-16", "estado": "enviado", "recordatorios_enviados": ["2026-06-12", "2026-06-15"] },
+    { "booking_id": "bk-2026-003", "monto": 2200, "moneda": "DOP", "paypal_invoice_id": "INV-MOCK-003", "expira_en": "2026-06-16", "estado": "vencido", "recordatorios_enviados": ["2026-06-12", "2026-06-15", "2026-06-16"] },
+    { "booking_id": "bk-2026-004", "monto": 1800, "moneda": "DOP", "paypal_invoice_id": "INV-MOCK-004", "expira_en": "2026-07-13", "estado": "enviado", "recordatorios_enviados": [] },
+    { "booking_id": "bk-2026-005", "monto": 900, "moneda": "DOP", "paypal_invoice_id": "INV-MOCK-005", "expira_en": "2026-07-13", "estado": "enviado", "recordatorios_enviados": [] },
+    { "booking_id": "bk-2026-007", "monto": 900, "moneda": "DOP", "paypal_invoice_id": "INV-MOCK-007", "expira_en": "2026-07-13", "estado": "pendiente", "recordatorios_enviados": [] }
+  ]
+}
+```
+
+---
+
+## 5. Testimonials (curados, ES/EN)
+
+> De ediciones anteriores de estos tours. Cortos, naturales, con detalle específico.
+
+```json
+{
+  "testimonials": [
+    {
+      "id": "tst-001",
+      "cliente_nombre": "Ana Belén R.",
+      "tour_id": "tour-balneario-la-plaza",
+      "contenido_es": "El agua de La Plaza es de otro mundo, increíblemente cristalina. El staff súper pendiente de todos y el almuerzo típico estuvo buenísimo. Repito sin pensarlo.",
+      "contenido_en": "The water at La Plaza is out of this world, incredibly clear. The staff looked after everyone and the typical lunch was delicious. I'd do it again in a heartbeat.",
+      "rating": 5,
+      "foto_url": "",
+      "fecha": "2025-08-17",
+      "aprobado": true,
+      "orden": 1
+    },
+    {
+      "id": "tst-002",
+      "cliente_nombre": "James W.",
+      "tour_id": "tour-balneario-la-plaza",
+      "contenido_es": "Una joya escondida del sur. Los chalecos y los guías nos dieron mucha tranquilidad en el trayecto por el río. Organización de 10.",
+      "contenido_en": "A hidden gem in the south. The life vests and guides gave us real peace of mind along the river. Top-notch organization.",
+      "rating": 5,
+      "foto_url": "",
+      "fecha": "2025-09-21",
+      "aprobado": true,
+      "orden": 2
+    },
+    {
+      "id": "tst-003",
+      "cliente_nombre": "Sofía R.",
+      "tour_id": "tour-pico-diego-salto-jima",
+      "contenido_es": "Madrugamos muchísimo pero el amanecer desde el Pico Diego valió cada minuto. El Salto de Jima fue el cierre perfecto. Experiencia inolvidable.",
+      "contenido_en": "We woke up super early but the sunrise from Pico Diego was worth every minute. Salto de Jima was the perfect closer. An unforgettable experience.",
+      "rating": 5,
+      "foto_url": "",
+      "fecha": "2025-07-20",
+      "aprobado": true,
+      "orden": 3
+    },
+    {
+      "id": "tst-004",
+      "cliente_nombre": "Marie D.",
+      "tour_id": "tour-pico-diego-salto-jima",
+      "contenido_es": "El senderismo es exigente pero la vista lo compensa todo. El grupo y el staff hicieron el ambiente muy ameno. Muy recomendable.",
+      "contenido_en": "The hike is demanding but the view makes up for everything. The group and staff made it a really friendly atmosphere. Highly recommended.",
+      "rating": 5,
+      "foto_url": "",
+      "fecha": "2025-07-20",
+      "aprobado": true,
+      "orden": 4
+    },
+    {
+      "id": "tst-005",
+      "cliente_nombre": "Pedro J.",
+      "tour_id": "tour-balneario-la-plaza",
+      "contenido_es": "Buen viaje en general, el balneario espectacular. La salida muy temprano se siente, pero llegar tan limpio el río lo vale.",
+      "contenido_en": "Great trip overall, the spot is spectacular. The early departure is felt, but reaching such a clean river makes it worth it.",
+      "rating": 4,
+      "foto_url": "",
+      "fecha": "2025-06-22",
+      "aprobado": true,
+      "orden": 5
+    },
+    {
+      "id": "tst-006",
+      "cliente_nombre": "Lucía F.",
+      "tour_id": "tour-pico-diego-salto-jima",
+      "contenido_es": "Random Trips cuida los detalles: café temprano, fotos durante todo el recorrido y guías atentos. Una manera distinta de conocer RD.",
+      "contenido_en": "Random Trips takes care of the details: early coffee, photos throughout and attentive guides. A different way to discover the DR.",
+      "rating": 5,
+      "foto_url": "",
+      "fecha": "2025-07-21",
+      "aprobado": true,
+      "orden": 6
+    }
+  ]
+}
+```
+
+---
+
+## 6. Resultado esperado en el Dashboard
+
+Con esta data el dashboard debería mostrar, aprox.:
+- **Reservas activas:** 7 (4 Pico Diego · 3 La Plaza).
+- **Ingresos cobrados (DOP):** 17,200 (suma de `deposito_pagado`).
+- **Saldos por cobrar (DOP):** 8,000 (suma de `saldo_pendiente`).
+- **Próximos tours:** Balneario La Plaza (21 jun) y Pico Diego (19 jul).
+- **Alertas:**
+  - Saldo vencido: `bk-2026-003` (La Plaza, RD$2,200) → link de pago vencido.
+  - Saldo vence hoy: `bk-2026-002` (La Plaza, RD$2,200) → último recordatorio enviado.
+- **Testimonios publicados:** 6 (todos aprobados).
+
+> Nota: los `cupos_reservados` de Availability (23 / 31 del prompt anterior) representan el agregado total de inscritos; estas 7 reservas son la muestra detallada visible en el CMS. Si quieres que cuadren exactamente, baja `cupos_reservados` a 3 (La Plaza) y 4 (Pico Diego).
