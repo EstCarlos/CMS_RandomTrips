@@ -14,9 +14,9 @@ const statusConfig: Record<string, { variant: "success" | "neutral" | "warning" 
 };
 
 const tipoConfig: Record<string, { label: string; color: string; bg: string }> = {
-  fijo:         { label: "🎯 Fijo",         color: "#1D4ED8", bg: "#EFF6FF" },
-  customizable: { label: "🔀 Customizable", color: "#7C3AED", bg: "#F5F3FF" },
-  privado:      { label: "📩 Privado",      color: "#92400E", bg: "#FFFBEB" },
+  fijo:      { label: "🎯 Fijo",      color: "#1D4ED8", bg: "#EFF6FF" },
+  multi_dia: { label: "🗓️ Multi-día", color: "#7C3AED", bg: "#F5F3FF" },
+  privado:   { label: "📩 Privado",   color: "#92400E", bg: "#FFFBEB" },
 };
 
 export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
