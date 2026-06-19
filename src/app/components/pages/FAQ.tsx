@@ -72,10 +72,10 @@ function FAQEditor({ item, onSave, onClose }: { item: FAQItem | null; onSave: (i
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: 16 }}>
           <FormField label="Pregunta" required>
-            <BilingualField valueES={pregES} valueEN={pregEN} onChangeES={setPregES} onChangeEN={setPregEN} placeholder="¿Cómo puedo...?" />
+            <BilingualField value={{ es: pregES, en: pregEN }} onChange={v => { setPregES(v.es); setPregEN(v.en); }} placeholder="¿Cómo puedo...?" />
           </FormField>
           <FormField label="Respuesta" required>
-            <BilingualField valueES={respES} valueEN={respEN} onChangeES={setRespES} onChangeEN={setRespEN} multiline rows={6} placeholder="La respuesta detallada..." />
+            <BilingualField value={{ es: respES, en: respEN }} onChange={v => { setRespES(v.es); setRespEN(v.en); }} multiline rows={6} placeholder="La respuesta detallada..." />
           </FormField>
           <FormField label="Estado">
             <div style={{ display: "flex", gap: 8 }}>

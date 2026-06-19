@@ -17,8 +17,8 @@ const TABS: { id: ConfigTab; label: string; icon: string }[] = [
 
 /* ── Tasas de cambio ──────────────────────────────────── */
 // Real exchange rates from SiteConfig (USD/EUR stored as DOP multiplier inverse)
-const usdDOP = (1 / SITE_CONFIG.tasas_cambio.USD).toFixed(2); // ≈ 59.88
-const eurDOP = (1 / SITE_CONFIG.tasas_cambio.EUR).toFixed(2); // ≈ 64.52
+const usdDOP = (1 / SITE_CONFIG.exchangeRates.USD).toFixed(2); // ≈ 59.88
+const eurDOP = (1 / SITE_CONFIG.exchangeRates.EUR).toFixed(2); // ≈ 64.52
 
 const rateHistory = [
   { fecha: "16 Jun 2026 09:00", usd: usdDOP, eur: eurDOP, actor: "Alejandra Torres" },
@@ -122,11 +122,11 @@ function TasasCambio() {
 /* ── Contacto y redes ─────────────────────────────────── */
 function ContactoRedes() {
   const [data, setData] = useState({
-    direccion: SITE_CONFIG.punto_salida_default.direccion,
-    telefono: SITE_CONFIG.contacto.whatsapp,
-    whatsapp: SITE_CONFIG.contacto.whatsapp,
-    email: SITE_CONFIG.contacto.email,
-    instagram: SITE_CONFIG.redes.instagram.replace("@", ""),
+    direccion: SITE_CONFIG.defaultDeparturePoint.address,
+    telefono: SITE_CONFIG.contact.whatsapp,
+    whatsapp: SITE_CONFIG.contact.whatsapp,
+    email: SITE_CONFIG.contact.email,
+    instagram: (SITE_CONFIG.social.instagram ?? "").replace("@", ""),
     facebook: "randomtripsrd",
     tiktok: "randomtripsdo",
     youtube: "randomtrips",
@@ -175,9 +175,9 @@ function ContactoRedes() {
 
 /* ── Servicios catalog ────────────────────────────────── */
 const SERVICIOS_INIT = SERVICE_CATALOG.map(s => ({
-  id: s.id, cat: s.categoria, icon: s.icono,
-  nombreES: s.nombre_es, nombreEN: s.nombre_en,
-  orden: s.orden, activo: true,
+  id: s.id, cat: s.category, icon: s.icon,
+  nombreES: s.name.es, nombreEN: s.name.en,
+  orden: s.order, activo: true,
 }));
 
 function CatalogoServicios() {

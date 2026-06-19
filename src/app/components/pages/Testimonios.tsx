@@ -7,7 +7,7 @@ import { TESTIMONIALS, TOURS_DATA } from "../../data/realData";
 
 type Testimonio = typeof TESTIMONIALS[0];
 
-const TOUR_OPTIONS = TOURS_DATA.map(t => ({ value: t.id, label: t.titulo_es }));
+const TOUR_OPTIONS = TOURS_DATA.map(t => ({ value: t.id, label: t.title.es }));
 
 /* ── Star rating ──────────────────────────────────────── */
 function StarRating({ rating, onChange }: { rating: number; onChange?: (r: number) => void }) {
@@ -37,9 +37,9 @@ function TestimonioEditor({ item, onSave, onClose }: {
   const isNew = !item;
   const [t, setT] = useState<Testimonio>(item ?? {
     id: `tst-${Date.now()}`,
-    cliente_nombre: "", tour_id: "", tour_nombre: "",
-    contenido_es: "", contenido_en: "",
-    rating: 5, fecha: "Jun 2026", aprobado: false, orden: 99,
+    customerName: "", tourId: "", tourName: "",
+    content: { es: "", en: "" },
+    rating: 5, date: "Jun 2026", approved: false, order: 99,
   });
 
   return (
@@ -55,15 +55,15 @@ function TestimonioEditor({ item, onSave, onClose }: {
         <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <FormField label="Nombre del cliente" required>
-              <Input value={t.cliente_nombre} onChange={v => setT(p => ({...p, cliente_nombre: v}))} placeholder="Ana Belén R." />
+              <Input value={t.customerName} onChange={v => setT(p => ({...p, customerName: v}))} placeholder="Ana Belén R." />
             </FormField>
             <FormField label="Fecha">
-              <Input value={t.fecha} onChange={v => setT(p => ({...p, fecha: v}))} placeholder="Jul 2025" />
+              <Input value={t.date} onChange={v => setT(p => ({...p, date: v}))} placeholder="Jul 2025" />
             </FormField>
           </div>
           <FormField label="Tour asociado">
-            <SelectField value={t.tour_id}
-              onChange={v => { const tour = TOURS_DATA.find(x => x.id === v); setT(p => ({...p, tour_id: v, tour_nombre: tour?.titulo_es || ""})); }}
+            <SelectField value={t.tourId}
+              onChange={v => { const tour = TOURS_DATA.find(x => x.id === v); setT(p => ({...p, tourId: v, tourName: tour?.title.es || ""})); }}
               options={TOUR_OPTIONS}
               placeholder="Seleccionar tour (opcional)..."
             />
@@ -76,9 +76,8 @@ function TestimonioEditor({ item, onSave, onClose }: {
           </FormField>
           <FormField label="Contenido del testimonio" required>
             <BilingualField
-              valueES={t.contenido_es} valueEN={t.contenido_en}
-              onChangeES={v => setT(p => ({...p, contenido_es: v}))}
-              onChangeEN={v => setT(p => ({...p, contenido_en: v}))}
+              value={t.content}
+              onChange={v => setT(p => ({...p, content: v}))}
               multiline rows={5}
               placeholder="El agua de La Plaza es de otro mundo..."
             />
@@ -87,14 +86,14 @@ function TestimonioEditor({ item, onSave, onClose }: {
             <FormField label="Estado">
               <div style={{ display: "flex", gap: 6 }}>
                 {([true, false] as const).map(s => (
-                  <button key={String(s)} onClick={() => setT(p => ({...p, aprobado: s}))} style={{ flex: 1, padding: "6px", borderRadius: 6, border: `1.5px solid ${t.aprobado === s ? "#006CFE" : "#E5E7EB"}`, background: t.aprobado === s ? "#EFF6FF" : "#FFFFFF", cursor: "pointer", fontSize: 12, fontWeight: t.aprobado === s ? 600 : 400, color: t.aprobado === s ? "#006CFE" : "#475569" }}>
+                  <button key={String(s)} onClick={() => setT(p => ({...p, approved: s}))} style={{ flex: 1, padding: "6px", borderRadius: 6, border: `1.5px solid ${t.approved === s ? "#006CFE" : "#E5E7EB"}`, background: t.approved === s ? "#EFF6FF" : "#FFFFFF", cursor: "pointer", fontSize: 12, fontWeight: t.approved === s ? 600 : 400, color: t.approved === s ? "#006CFE" : "#475569" }}>
                     {s ? "✓ Aprobado" : "⬜ Borrador"}
                   </button>
                 ))}
               </div>
             </FormField>
             <FormField label="Orden de display">
-              <Input value={String(t.orden)} onChange={v => setT(p => ({...p, orden: Number(v)}))} type="number" placeholder="1" />
+              <Input value={String(t.order)} onChange={v => setT(p => ({...p, order: Number(v)}))} type="number" placeholder="1" />
             </FormField>
           </div>
         </div>
@@ -116,8 +115,8 @@ export function Testimonios() {
     setItems(prev => prev.some(i => i.id === t.id) ? prev.map(i => i.id === t.id ? t : i) : [...prev, t]);
   };
 
-  const aprobados = items.filter(t => t.aprobado).length;
-  const borradores = items.filter(t => !t.aprobado).length;
+  const aprobados = items.filter(t => t.approved).length;
+  const borradores = items.filter(t => !t.approved).length;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, sans-serif" }}>
@@ -131,7 +130,7 @@ export function Testimonios() {
           <span style={{ color: "#16A34A", fontWeight: 600 }}>✓ {aprobados} aprobados</span>
           {borradores > 0 && <span style={{ color: "#94A3B8" }}>{borradores} borradores</span>}
           <span style={{ color: "#94A3B8" }}>·</span>
-          <span style={{ color: "#475569" }}>Promedio: <strong>⭐ {(items.filter(t => t.aprobado).reduce((s, t) => s + t.rating, 0) / (aprobados || 1)).toFixed(1)}</strong></span>
+          <span style={{ color: "#475569" }}>Promedio: <strong>⭐ {(items.filter(t => t.approved).reduce((s, t) => s + t.rating, 0) / (aprobados || 1)).toFixed(1)}</strong></span>
         </div>
         <button onClick={() => setEditing("new")}
           style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 6, border: "none", background: "#006CFE", fontSize: 13, color: "#FFFFFF", cursor: "pointer", fontWeight: 500 }}>
@@ -150,7 +149,7 @@ export function Testimonios() {
             </tr>
           </thead>
           <tbody>
-            {items.sort((a, b) => a.orden - b.orden).map((t, i) => (
+            {items.sort((a, b) => a.order - b.order).map((t, i) => (
               <tr key={t.id}
                 style={{ borderBottom: i < items.length - 1 ? "1px solid #F1F5F9" : "none" }}
                 onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
@@ -159,13 +158,13 @@ export function Testimonios() {
                 <td style={{ padding: "12px 14px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#475569", flexShrink: 0 }}>
-                      {t.cliente_nombre.split(" ").map(n => n[0]).join("").slice(0,2)}
+                      {t.customerName.split(" ").map(n => n[0]).join("").slice(0,2)}
                     </div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{t.cliente_nombre}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{t.customerName}</span>
                   </div>
                 </td>
                 <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {t.tour_nombre.split(" ").slice(0, 3).join(" ")}…
+                  {(t.tourName ?? "").split(" ").slice(0, 3).join(" ")}…
                 </td>
                 <td style={{ padding: "12px 14px", textAlign: "center" }}>
                   <div style={{ display: "flex", justifyContent: "center" }}>
@@ -173,13 +172,13 @@ export function Testimonios() {
                   </div>
                 </td>
                 <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569", maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontStyle: "italic" }}>
-                  "{t.contenido_es}"
+                  "{t.content.es}"
                 </td>
                 <td style={{ padding: "12px 14px" }}>
-                  <StatusBadge variant={t.aprobado ? "success" : "neutral"} label={t.aprobado ? "Aprobado" : "Borrador"} />
+                  <StatusBadge variant={t.approved ? "success" : "neutral"} label={t.approved ? "Aprobado" : "Borrador"} />
                 </td>
-                <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{t.fecha}</td>
-                <td style={{ padding: "12px 14px", textAlign: "center", fontSize: 13, fontWeight: 600, color: "#475569" }}>{t.orden}</td>
+                <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{t.date}</td>
+                <td style={{ padding: "12px 14px", textAlign: "center", fontSize: 13, fontWeight: 600, color: "#475569" }}>{t.order}</td>
                 <td style={{ padding: "12px 14px" }}>
                   <div style={{ display: "flex", gap: 4 }}>
                     <button onClick={() => setEditing(t)}

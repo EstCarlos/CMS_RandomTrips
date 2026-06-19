@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, X, Lock, Unlock, Users, Calendar, SlidersHorizontal } from "lucide-react";
-import { TOURS_DATA, AVAILABILITY, formatDOP } from "../../data/realData";
+import { TOURS_DATA, AVAILABILITY, getTourPriceDisplay } from "../../data/realData";
 
 /* ── Types ────────────────────────────────────────────── */
 type SlotStatus = "available" | "almost-full" | "full" | "blocked";
@@ -24,25 +24,25 @@ const TOUR_COLORS: Record<string, string> = {
 };
 
 function makeSlot(av: typeof AVAILABILITY[0]): DaySlot {
-  const t = TOURS_DATA.find(x => x.id === av.tour_id)!;
-  const pct = av.cupos_reservados / av.cupos_totales;
-  const status: SlotStatus = av.estado === "completado" ? "full"
-    : av.cupos_libres === 0 ? "full"
+  const t = TOURS_DATA.find(x => x.id === av.tourId)!;
+  const pct = av.reservedSeats / av.totalSeats;
+  const status: SlotStatus = av.status === "completed" ? "full"
+    : av.availableSeats === 0 ? "full"
     : pct > 0.8 ? "almost-full"
     : "available";
   return {
-    tourId: av.tour_id, tourName: t.titulo_es,
-    color: TOUR_COLORS[av.tour_id] || "#006CFE",
-    paxLibres: av.cupos_libres, paxTotal: av.cupos_totales,
-    status, horasSalida: t.logistica.hora_salida,
-    precio: t.pricing,
+    tourId: av.tourId, tourName: t.title.es,
+    color: TOUR_COLORS[av.tourId] || "#006CFE",
+    paxLibres: av.availableSeats, paxTotal: av.totalSeats,
+    status, horasSalida: t.logistics.departureTime,
+    precio: getTourPriceDisplay(t),
   };
 }
 
 // Build SLOTS map from real availability
 const SLOTS: Record<string, DaySlot[]> = {};
 AVAILABILITY.forEach(av => {
-  const key = av.fecha; // "2025-07-19" or "2025-06-21"
+  const key = av.date; // "2025-07-19" or "2025-06-21"
   if (!SLOTS[key]) SLOTS[key] = [];
   SLOTS[key].push(makeSlot(av));
 });
@@ -57,12 +57,11 @@ function dateKey(y: number, m: number, d: number) {
 function daysInMonth(y: number, m: number) { return new Date(y, m+1, 0).getDate(); }
 function firstDOW(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7; }
 
-const statusColors: Record<SlotStatus | "completado", { dot: string; bg: string }> = {
+const statusColors: Record<SlotStatus, { dot: string; bg: string }> = {
   available:    { dot: "#16A34A", bg: "#F0FDF4" },
   "almost-full":{ dot: "#F59E0B", bg: "#FFFBEB" },
   full:         { dot: "#F13540", bg: "#FEF2F2" },
   blocked:      { dot: "#94A3B8", bg: "#F1F5F9" },
-  completado:   { dot: "#7C3AED", bg: "#F5F3FF" },
 };
 
 /* ── Day Drawer ───────────────────────────────────────── */
@@ -174,7 +173,7 @@ function MasterCalendar({ year, month, onYearMonth, onSelectTour }: {
             <select value={filterTour} onChange={e => setFilterTour(e.target.value)}
               style={{ width: "100%", padding: "6px 8px", border: "1px solid #E5E7EB", borderRadius: 5, fontSize: 12, outline: "none" }}>
               <option value="">Todos</option>
-              {TOURS_DATA.map(t => <option key={t.id} value={t.id}>{t.titulo_es.split(" ").slice(0,3).join(" ")}...</option>)}
+              {TOURS_DATA.map(t => <option key={t.id} value={t.id}>{t.title.es.split(" ").slice(0,3).join(" ")}...</option>)}
             </select>
           </div>
           {filterTour && <button onClick={() => setFilterTour("")} style={{ fontSize: 11, color: "#94A3B8", border: "none", background: "transparent", cursor: "pointer" }}>Limpiar filtros</button>}
@@ -189,7 +188,7 @@ function MasterCalendar({ year, month, onYearMonth, onSelectTour }: {
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
             >
               <div style={{ width: 10, height: 10, borderRadius: 2, background: TOUR_COLORS[t.id] || "#006CFE", flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: "#475569" }}>{t.titulo_es.split(" ").slice(0,2).join(" ")}</span>
+              <span style={{ fontSize: 11, color: "#475569" }}>{t.title.es.split(" ").slice(0,2).join(" ")}</span>
             </button>
           ))}
         </div>
@@ -320,7 +319,7 @@ function TourCalendar({ tourId, year, month, onYearMonth, onBack }: {
 }) {
   const [drawerDay, setDrawerDay] = useState<string | null>(null);
   const tour  = TOURS_DATA.find(t => t.id === tourId)!;
-  const av    = AVAILABILITY.find(a => a.tour_id === tourId);
+  const av    = AVAILABILITY.find(a => a.tourId === tourId);
   const color = TOUR_COLORS[tourId] || "#006CFE";
   const days  = daysInMonth(year, month);
   const startDOW = firstDOW(year, month);
@@ -338,14 +337,14 @@ function TourCalendar({ tourId, year, month, onYearMonth, onBack }: {
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 12, height: 12, borderRadius: 3, background: color }} />
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", margin: 0 }}>{tour.titulo_es}</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", margin: 0 }}>{tour.title.es}</h2>
           </div>
           <div style={{ fontSize: 12, color: "#94A3B8", marginTop: 3 }}>
-            Capacidad: {tour.capacidad_max} pax · {tour.pricing} · Salida: {tour.logistica.hora_salida}
+            Capacidad: {tour.maxCapacity} pax · {getTourPriceDisplay(tour)} · Salida: {tour.logistics.departureTime}
           </div>
           {av && (
             <div style={{ marginTop: 6, display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: "#EFF6FF", border: "1px solid #BFDBFE", fontSize: 12, color: "#006CFE" }}>
-              Fecha abierta: {av.fecha_display} — {av.cupos_libres} plazas libres de {av.cupos_totales}
+              Fecha abierta: {av.displayDate} — {av.availableSeats} plazas libres de {av.totalSeats}
             </div>
           )}
         </div>
@@ -436,7 +435,7 @@ export function Disponibilidad() {
         {view === "tour" && (
           <select value={selectedTour} onChange={e => setSelectedTour(e.target.value)}
             style={{ padding: "6px 12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, outline: "none" }}>
-            {TOURS_DATA.map(t => <option key={t.id} value={t.id}>{t.titulo_es}</option>)}
+            {TOURS_DATA.map(t => <option key={t.id} value={t.id}>{t.title.es}</option>)}
           </select>
         )}
       </div>

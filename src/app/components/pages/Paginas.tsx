@@ -22,7 +22,7 @@ function PaginaEditor({ page, onBack }: { page: Page; onBack: () => void }) {
           <ArrowLeft size={12} /> Páginas
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A", margin: 0, flex: 1 }}>{p.titulo_es}</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A", margin: 0, flex: 1 }}>{p.title.es}</h1>
           <StatusBadge variant="success" label="Publicado" />
           <div style={{ display: "flex", gap: 8 }}>
             <Btn variant="secondary" size="sm"><Save size={13} /> Guardar borrador</Btn>
@@ -33,8 +33,8 @@ function PaginaEditor({ page, onBack }: { page: Page; onBack: () => void }) {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 760 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <FormField label="Título ES"><Input value={p.titulo_es} onChange={v => setP(prev => ({...prev, titulo_es: v}))} /></FormField>
-          <FormField label="Título EN"><Input value={p.titulo_en} onChange={v => setP(prev => ({...prev, titulo_en: v}))} /></FormField>
+          <FormField label="Título ES"><Input value={p.title.es} onChange={v => setP(prev => ({...prev, title: { ...prev.title, es: v }}))} /></FormField>
+          <FormField label="Título EN"><Input value={p.title.en} onChange={v => setP(prev => ({...prev, title: { ...prev.title, en: v }}))} /></FormField>
         </div>
         <FormField label="Slug (URL)" helper="Ruta en la web pública">
           <div style={{ display: "flex", border: "1px solid #E5E7EB", borderRadius: 6, overflow: "hidden" }}>
@@ -54,8 +54,8 @@ function PaginaEditor({ page, onBack }: { page: Page; onBack: () => void }) {
           </div>
           <FormField label={`Contenido ${tab.toUpperCase()}`} required>
             <textarea
-              value={tab === "es" ? p.contenido_es : p.contenido_en}
-              onChange={e => setP(prev => tab === "es" ? {...prev, contenido_es: e.target.value} : {...prev, contenido_en: e.target.value})}
+              value={tab === "es" ? (p.content?.es ?? "") : (p.content?.en ?? "")}
+              onChange={e => setP(prev => ({...prev, content: { ...(prev.content ?? { es: "", en: "" }), [tab]: e.target.value }}))}
               rows={14}
               style={{ width: "100%", padding: "12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "Inter, sans-serif", boxSizing: "border-box", lineHeight: 1.7 }}
             />
@@ -109,8 +109,8 @@ export function Paginas() {
                 onClick={() => setEditing(page)}
               >
                 <td style={{ padding: "14px 16px" }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{page.titulo_es}</div>
-                  <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>{page.titulo_en}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{page.title.es}</div>
+                  <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>{page.title.en}</div>
                 </td>
                 <td style={{ padding: "14px 16px", fontSize: 12, color: "#94A3B8", fontFamily: "monospace" }}>/{page.slug}</td>
                 <td style={{ padding: "14px 16px" }}>

@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Plus, Mail, Phone, Edit2, Globe, MessageSquare, CreditCard, FileText } from "lucide-react";
 import { StatusBadge } from "../ui/StatusBadge";
 import { FilterBar } from "../ui/FilterBar";
-import { CUSTOMERS, BOOKINGS, TOURS_DATA, formatDOP } from "../../data/realData";
+import { CUSTOMERS, BOOKINGS, TOURS_DATA, SITE_CONFIG, formatDOP } from "../../data/realData";
 
 /* ── Lookups & derived ────────────────────────────────── */
 const tourMap = Object.fromEntries(TOURS_DATA.map(t => [t.id, t]));
 
 const enrichedCustomers = CUSTOMERS.map(c => {
-  const bks      = BOOKINGS.filter(b => b.customer_id === c.id);
-  const valorTotal = bks.reduce((s, b) => s + b.deposito_pagado, 0);
+  const bks      = BOOKINGS.filter(b => b.customerId === c.id);
+  const valorTotal = bks.reduce((s, b) => s + b.depositPaid, 0);
   const lastBk   = bks.at(-1);
   return { ...c, totalReservas: bks.length, valorTotal, bks, ultimaActividad: lastBk ? "Jun 2026" : "—" };
 });
@@ -29,9 +29,9 @@ function ClienteDetalle({ cliente, onBack }: { cliente: typeof enrichedCustomers
   ];
 
   const statusConf: Record<string, { variant: "success" | "info" | "danger"; label: string }> = {
-    pagado_completo: { variant: "success", label: "Pagado" },
-    deposito_pagado: { variant: "info",    label: "Depósito" },
-    saldo_vencido:   { variant: "danger",  label: "Vencido" },
+    fullyPaid:     { variant: "success", label: "Pagado" },
+    depositPaid:   { variant: "info",    label: "Depósito" },
+    balanceOverdue:{ variant: "danger",  label: "Vencido" },
   };
 
   return (
@@ -42,16 +42,16 @@ function ClienteDetalle({ cliente, onBack }: { cliente: typeof enrichedCustomers
 
       <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "20px 24px", marginBottom: 20, display: "flex", alignItems: "center", gap: 20 }}>
         <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#006CFE", flexShrink: 0 }}>
-          {cliente.nombre.split(" ").map(n => n[0]).join("").slice(0, 2)}
+          {cliente.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>{cliente.nombre}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>{cliente.name}</div>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#475569" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Mail size={11} /> {cliente.email}</span>
-            <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Phone size={11} /> {cliente.telefono}</span>
-            <span>{cliente.pais}</span>
-            <span>Idioma: {cliente.idioma}</span>
-            <span>Moneda: {cliente.moneda}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Phone size={11} /> {cliente.phone}</span>
+            <span>{cliente.country}</span>
+            <span>Idioma: {cliente.preferredLanguage}</span>
+            <span>Moneda: {cliente.preferredCurrency}</span>
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, textAlign: "center" }}>
@@ -92,17 +92,17 @@ function ClienteDetalle({ cliente, onBack }: { cliente: typeof enrichedCustomers
               </thead>
               <tbody>
                 {cliente.bks.map((bk, i) => {
-                  const t  = tourMap[bk.tour_id];
-                  const st = statusConf[bk.estado];
+                  const t  = tourMap[bk.tourId];
+                  const st = statusConf[bk.status];
                   return (
                     <tr key={bk.id} style={{ borderBottom: i < cliente.bks.length - 1 ? "1px solid #F1F5F9" : "none" }}>
                       <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontSize: 12 }}>{bk.id}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 13 }}>{t.titulo_es}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{bk.fecha_display}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 13, textAlign: "center" }}>{bk.pax_total}</td>
-                      <td style={{ padding: "12px 14px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatDOP(bk.precio_total)}</td>
-                      <td style={{ padding: "12px 14px", fontWeight: 600, color: "#16A34A", fontVariantNumeric: "tabular-nums" }}>{formatDOP(bk.deposito_pagado)}</td>
-                      <td style={{ padding: "12px 14px", fontWeight: 600, color: bk.saldo_pendiente > 0 ? "#F13540" : "#94A3B8", fontVariantNumeric: "tabular-nums" }}>{bk.saldo_pendiente > 0 ? formatDOP(bk.saldo_pendiente) : "—"}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 13 }}>{t.title.es}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{bk.displayDate}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 13, textAlign: "center" }}>{bk.totalPax}</td>
+                      <td style={{ padding: "12px 14px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatDOP(bk.totalPrice)}</td>
+                      <td style={{ padding: "12px 14px", fontWeight: 600, color: "#16A34A", fontVariantNumeric: "tabular-nums" }}>{formatDOP(bk.depositPaid)}</td>
+                      <td style={{ padding: "12px 14px", fontWeight: 600, color: bk.outstandingBalance > 0 ? "#F13540" : "#94A3B8", fontVariantNumeric: "tabular-nums" }}>{bk.outstandingBalance > 0 ? formatDOP(bk.outstandingBalance) : "—"}</td>
                       <td style={{ padding: "12px 14px" }}><StatusBadge variant={st.variant} label={st.label} /></td>
                     </tr>
                   );
@@ -123,7 +123,7 @@ function ClienteDetalle({ cliente, onBack }: { cliente: typeof enrichedCustomers
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {[
             { text: "Email de confirmación de reserva enviado", fecha: "Jun 2026" },
-            { text: `Recordatorio de saldo por WhatsApp (${SITE_CONFIG.contacto.whatsapp})`, fecha: "Jun 2026" },
+            { text: `Recordatorio de saldo por WhatsApp (${SITE_CONFIG.contact.whatsapp})`, fecha: "Jun 2026" },
           ].map((e, i) => (
             <div key={i} style={{ display: "flex", gap: 12, padding: "12px 16px", background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8 }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -151,9 +151,6 @@ function ClienteDetalle({ cliente, onBack }: { cliente: typeof enrichedCustomers
   );
 }
 
-/* ── SITE_CONFIG import for WhatsApp ──────────────────── */
-import { SITE_CONFIG } from "../../data/realData";
-
 /* ── List ─────────────────────────────────────────────── */
 export function Clientes() {
   const [search, setSearch]   = useState("");
@@ -164,10 +161,9 @@ export function Clientes() {
 
   const filtered = enrichedCustomers.filter(c => {
     const q = search.toLowerCase();
-    const mSearch = !q || c.nombre.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
-    const mPais   = !filters.pais   || c.pais.includes(filters.pais);
-    const mIdioma = !filters.idioma || c.idioma === filters.idioma;
-    return mSearch && mPais && mIdioma;
+    const mSearch = !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
+    const mIdioma = !filters.idioma || c.preferredLanguage === filters.idioma;
+    return mSearch && mIdioma;
   });
 
   return (
@@ -176,9 +172,9 @@ export function Clientes() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         {[
           { label: "Total clientes",    value: CUSTOMERS.length },
-          { label: "Dominicanos",       value: CUSTOMERS.filter(c => c.pais.includes("DO")).length },
-          { label: "Internacionales",   value: CUSTOMERS.filter(c => !c.pais.includes("DO")).length },
-          { label: "Con saldo pendiente", value: BOOKINGS.filter(b => b.saldo_pendiente > 0 && [...new Set(BOOKINGS.map(x => x.customer_id))].includes(b.customer_id)).length },
+          { label: "Dominicanos",       value: CUSTOMERS.filter(c => c.country.includes("DO")).length },
+          { label: "Internacionales",   value: CUSTOMERS.filter(c => !c.country.includes("DO")).length },
+          { label: "Con saldo pendiente", value: BOOKINGS.filter(b => b.outstandingBalance > 0).length },
         ].map(k => (
           <div key={k.label} style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 12, color: "#475569" }}>{k.label}</span>
@@ -217,7 +213,7 @@ export function Clientes() {
             {filtered.length === 0 ? (
               <tr><td colSpan={8} style={{ padding: "48px", textAlign: "center", color: "#94A3B8", fontSize: 13 }}>Sin clientes registrados</td></tr>
             ) : filtered.map((c, i) => {
-              const saldo = c.bks.reduce((s, b) => s + b.saldo_pendiente, 0);
+              const saldo = c.bks.reduce((s, b) => s + b.outstandingBalance, 0);
               return (
                 <tr key={c.id}
                   onClick={() => setDetalle(c)}
@@ -228,14 +224,14 @@ export function Clientes() {
                   <td style={{ padding: "12px 14px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#006CFE", flexShrink: 0 }}>
-                        {c.nombre.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                        {c.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                       </div>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{c.nombre}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{c.name}</span>
                     </div>
                   </td>
                   <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{c.email}</td>
-                  <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{c.pais} · {c.idioma}</td>
-                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{c.moneda}</td>
+                  <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{c.country} · {c.preferredLanguage}</td>
+                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{c.preferredCurrency}</td>
                   <td style={{ padding: "12px 14px", textAlign: "center", fontWeight: 700, fontSize: 13 }}>{c.totalReservas}</td>
                   <td style={{ padding: "12px 14px", fontWeight: 700, color: "#16A34A", fontVariantNumeric: "tabular-nums" }}>{formatDOP(c.valorTotal)}</td>
                   <td style={{ padding: "12px 14px", fontWeight: 600, color: saldo > 0 ? "#F13540" : "#94A3B8", fontVariantNumeric: "tabular-nums" }}>
