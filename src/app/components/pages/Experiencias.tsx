@@ -6,7 +6,7 @@ import { FormField, Input, SelectField, BilingualField } from "../ui/FormField";
 import { Btn } from "../ui/Modal";
 import { EXPERIENCES, DESTINATIONS } from "../../data/realData";
 
-type Exp = typeof EXPERIENCES[0];
+type Exp = Omit<typeof EXPERIENCES[0], "status"> & { status: "published" | "draft" | "archived" };
 
 const tipoEmoji: Record<string, string> = {
   "Montaña": "⛰️", "Aventura": "🧗", "Acuática": "🤿", "Cultural": "🏛️",

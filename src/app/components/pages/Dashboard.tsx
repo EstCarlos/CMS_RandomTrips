@@ -1,4 +1,5 @@
-import { ClipboardList, DollarSign, AlertCircle, CalendarDays, AlertTriangle, CheckCircle2, Clock, ChevronRight, XCircle } from "lucide-react";
+import { ClipboardList, DollarSign, CalendarDays, AlertTriangle, CheckCircle2, Clock, ChevronRight, XCircle } from "lucide-react";
+import type { Page } from "../layout/Sidebar";
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { KPICard } from "../ui/KPICard";
 import { StatusBadge } from "../ui/StatusBadge";
@@ -105,7 +106,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 }
 
 /* ── Component ──────────────────────────────────────────── */
-export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void }) {
+export function Dashboard({ onNavigate }: { onNavigate?: (page: Page) => void }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, sans-serif" }}>
 

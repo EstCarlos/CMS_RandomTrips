@@ -823,7 +823,7 @@ export const CUSTOMERS = [
 ];
 
 /* ── Bookings ─────────────────────────────────────────── */
-export type BookingStatus = "pagado_completo" | "deposito_pagado" | "saldo_vencido";
+export type BookingStatus = "pagado_completo" | "deposito_pagado" | "saldo_vencido" | "cancelado";
 
 export const BOOKINGS = [
   { id: "bk-2026-001", customer_id: "cust-001", tour_id: "tour-balneario-la-plaza",    fecha: "2026-06-21", fecha_display: "21 Jun 2026", pax_total: 2, precio_total: 6400, deposito_pagado: 6400, saldo_pendiente: 0,    estado: "pagado_completo" as BookingStatus },

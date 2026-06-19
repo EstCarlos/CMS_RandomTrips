@@ -6,7 +6,7 @@ import { FormField, Input, Textarea, SelectField, BilingualField } from "../ui/F
 import { Btn } from "../ui/Modal";
 import { DESTINATIONS } from "../../data/realData";
 
-type Destino = typeof DESTINATIONS[0];
+type Destino = Omit<typeof DESTINATIONS[0], "status"> & { status: "published" | "draft" | "archived" };
 
 const statusConf: Record<string, { variant: "success" | "neutral" | "warning"; label: string }> = {
   published: { variant: "success", label: "Publicado" },
