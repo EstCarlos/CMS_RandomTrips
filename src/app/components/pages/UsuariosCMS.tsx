@@ -6,23 +6,23 @@ import { Btn } from "../ui/Modal";
 
 interface CmsUser {
   id: string;
-  nombre: string;
+  name: string;
   email: string;
   rol: "admin" | "staff" | "operador";
-  operadorAsociado: string;
-  ultimoLogin: string;
+  associatedOperator: string;
+  lastLogin: string;
   status: "active" | "invited" | "inactive";
 }
 
 const mockUsers: CmsUser[] = [
-  { id: "U-001", nombre: "Alejandra Torres",  email: "ale@randomtrips.do",    rol: "admin",    operadorAsociado: "—",                ultimoLogin: "Hoy 09:14",       status: "active"   },
-  { id: "U-002", nombre: "Carlos Reyes",       email: "carlos@randomtrips.do", rol: "staff",    operadorAsociado: "—",                ultimoLogin: "Hoy 08:45",       status: "active"   },
-  { id: "U-003", nombre: "María Pérez",        email: "maria@randomtrips.do",  rol: "staff",    operadorAsociado: "—",                ultimoLogin: "Ayer 17:22",      status: "active"   },
-  { id: "U-004", nombre: "Pedro Rosario",      email: "pedro@caribetours.com", rol: "operador", operadorAsociado: "Caribe Tours",     ultimoLogin: "15 Jun 2026",     status: "active"   },
-  { id: "U-005", nombre: "María Santos",       email: "maria@aventurard.com",  rol: "operador", operadorAsociado: "Aventura RD",      ultimoLogin: "14 Jun 2026",     status: "active"   },
-  { id: "U-006", nombre: "Luis Fernández",     email: "luis@colonialtours.do", rol: "operador", operadorAsociado: "Colonial Tours",   ultimoLogin: "10 Jun 2026",     status: "active"   },
-  { id: "U-007", nombre: "Ana Jiménez",        email: "ana@whalesamana.com",   rol: "operador", operadorAsociado: "Samaná Whale Tours", ultimoLogin: "8 Jun 2026",    status: "active"   },
-  { id: "U-008", nombre: "Nuevo Colaborador",  email: "nuevo@partner.com",     rol: "operador", operadorAsociado: "PC Excursiones",   ultimoLogin: "—",               status: "invited"  },
+  { id: "U-001", name: "Alejandra Torres",  email: "ale@randomtrips.do",    rol: "admin",    associatedOperator: "—",                lastLogin: "Hoy 09:14",       status: "active"   },
+  { id: "U-002", name: "Carlos Reyes",       email: "carlos@randomtrips.do", rol: "staff",    associatedOperator: "—",                lastLogin: "Hoy 08:45",       status: "active"   },
+  { id: "U-003", name: "María Pérez",        email: "maria@randomtrips.do",  rol: "staff",    associatedOperator: "—",                lastLogin: "Ayer 17:22",      status: "active"   },
+  { id: "U-004", name: "Pedro Rosario",      email: "pedro@caribetours.com", rol: "operador", associatedOperator: "Caribe Tours",     lastLogin: "15 Jun 2026",     status: "active"   },
+  { id: "U-005", name: "María Santos",       email: "maria@aventurard.com",  rol: "operador", associatedOperator: "Aventura RD",      lastLogin: "14 Jun 2026",     status: "active"   },
+  { id: "U-006", name: "Luis Fernández",     email: "luis@colonialtours.do", rol: "operador", associatedOperator: "Colonial Tours",   lastLogin: "10 Jun 2026",     status: "active"   },
+  { id: "U-007", name: "Ana Jiménez",        email: "ana@whalesamana.com",   rol: "operador", associatedOperator: "Samaná Whale Tours", lastLogin: "8 Jun 2026",    status: "active"   },
+  { id: "U-008", name: "Nuevo Colaborador",  email: "nuevo@partner.com",     rol: "operador", associatedOperator: "PC Excursiones",   lastLogin: "—",               status: "invited"  },
 ];
 
 const OPERADORES = ["Caribe Tours", "Aventura RD", "Colonial Tours", "Samaná Whale Tours", "Eco Caribe", "Norte Tours", "PC Excursiones", "Montaña RD"];
@@ -36,7 +36,7 @@ const ROL_CONF = {
 function InviteModal({ onClose }: { onClose: () => void }) {
   const [rol, setRol] = useState("staff");
   const [email, setEmail] = useState("");
-  const [nombre, setNombre] = useState("");
+  const [name, setName] = useState("");
   const [op, setOp] = useState("");
 
   return (
@@ -54,7 +54,7 @@ function InviteModal({ onClose }: { onClose: () => void }) {
         </div>
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <FormField label="Nombre completo" required><Input value={nombre} onChange={setNombre} placeholder="Pedro Rosario" /></FormField>
+            <FormField label="Nombre completo" required><Input value={name} onChange={setName} placeholder="Pedro Rosario" /></FormField>
             <FormField label="Email" required><Input value={email} onChange={setEmail} type="email" placeholder="usuario@email.com" /></FormField>
           </div>
           <FormField label="Rol de acceso" required>
@@ -136,15 +136,15 @@ export function UsuariosCMS() {
                     <div style={{ width: 32, height: 32, borderRadius: "50%", background: u.rol === "admin" ? "#EFF6FF" : u.rol === "staff" ? "#F0F9FF" : "#F5F3FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>
                       {ROL_CONF[u.rol].icon}
                     </div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{u.nombre}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{u.name}</span>
                   </div>
                 </td>
                 <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{u.email}</td>
                 <td style={{ padding: "12px 14px" }}>
                   <StatusBadge variant={ROL_CONF[u.rol].variant} label={ROL_CONF[u.rol].label} />
                 </td>
-                <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{u.operadorAsociado}</td>
-                <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{u.ultimoLogin}</td>
+                <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{u.associatedOperator}</td>
+                <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{u.lastLogin}</td>
                 <td style={{ padding: "12px 14px" }}>
                   <StatusBadge
                     variant={u.status === "active" ? "success" : u.status === "invited" ? "warning" : "neutral"}

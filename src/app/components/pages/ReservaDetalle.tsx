@@ -13,14 +13,14 @@ interface Reserva {
   cliente: string;
   email: string;
   telefono: string;
-  pais: string;
+  country: string;
   tour: string;
   destino: string;
   fechaTour: string;
   fechaCreacion: string;
   pax: number;
   total: number;
-  pagado: number;
+  paid: number;
   status: string;
   operador: string;
   notas: string;
@@ -53,8 +53,8 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
     { id: "LNK-441", monto: "RD$ 53,100", estado: "pendiente", creado: "12 Jun 2026", expira: "19 Jun 2026" },
   ]);
 
-  const saldo = r.total - r.pagado;
-  const pctPagado = (r.pagado / r.total) * 100;
+  const saldo = r.total - r.paid;
+  const pctPagado = (r.paid / r.total) * 100;
 
   return (
     <div style={{ fontFamily: "Inter, sans-serif", display: "flex", flexDirection: "column", gap: 0 }}>
@@ -97,7 +97,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                   { label: "Nombre",    value: r.cliente },
                   { label: "Email",     value: r.email   },
                   { label: "Teléfono", value: r.telefono },
-                  { label: "País",      value: r.pais    },
+                  { label: "País",      value: r.country },
                 ].map(f => (
                   <div key={f.label}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{f.label}</div>
@@ -156,7 +156,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                     <Check size={14} color="#FFFFFF" />
                   </div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: "#16A34A", textAlign: "center" }}>Depósito</div>
-                  <div style={{ fontSize: 10, color: "#94A3B8" }}>RD$ {(r.pagado).toLocaleString()}</div>
+                  <div style={{ fontSize: 10, color: "#94A3B8" }}>RD$ {(r.paid).toLocaleString()}</div>
                   <div style={{ fontSize: 10, color: "#94A3B8" }}>12 Jun</div>
                 </div>
                 {/* Connector */}
@@ -190,7 +190,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
               {/* Progress bar */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#475569", marginBottom: 4 }}>
-                  <span>Pagado: RD$ {r.pagado.toLocaleString()}</span>
+                  <span>Pagado: RD$ {r.paid.toLocaleString()}</span>
                   <span>Total: RD$ {r.total.toLocaleString()}</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: "#F1F5F9", overflow: "hidden" }}>
@@ -214,7 +214,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                       <td style={{ padding: "8px 10px", color: "#475569" }}>12 Jun 2026</td>
                       <td style={{ padding: "8px 10px", color: "#0F172A" }}>Depósito 25%</td>
                       <td style={{ padding: "8px 10px", color: "#475569" }}>Stripe · Visa ••4242</td>
-                      <td style={{ padding: "8px 10px", fontWeight: 700, color: "#16A34A" }}>RD$ {r.pagado.toLocaleString()}</td>
+                      <td style={{ padding: "8px 10px", fontWeight: 700, color: "#16A34A" }}>RD$ {r.paid.toLocaleString()}</td>
                       <td style={{ padding: "8px 10px" }}><StatusBadge variant="success" label="Confirmado" /></td>
                     </tr>
                   </tbody>
@@ -283,7 +283,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
                 { label: "Total",   val: `RD$ ${r.total.toLocaleString()}`,   bold: true  },
-                { label: "Pagado",  val: `RD$ ${r.pagado.toLocaleString()}`,  color: "#16A34A" },
+                { label: "Pagado",  val: `RD$ ${r.paid.toLocaleString()}`,  color: "#16A34A" },
                 { label: "Saldo",   val: `RD$ ${saldo.toLocaleString()}`,     color: saldo > 0 ? "#F13540" : "#475569" },
               ].map(row => (
                 <div key={row.label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>

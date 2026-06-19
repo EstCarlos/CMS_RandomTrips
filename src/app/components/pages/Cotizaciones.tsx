@@ -11,82 +11,82 @@ import { Btn } from "../ui/Modal";
 /* ── Types & mock data ──────────────────────────────────── */
 interface Cotizacion {
   id: string;
-  nombre: string;
+  name: string;
   email: string;
   telefono: string;
-  pais: string;
-  idioma: string;
+  country: string;
+  language: string;
   destinos: string[];
-  fechaInicio: string;
-  fechaFin: string;
+  startDate: string;
+  endDate: string;
   pax: number;
-  presupuesto: string;
+  budget: string;
   mensaje: string;
   status: "pending" | "sent" | "accepted" | "rejected";
-  asignado: string;
-  fechaSolicitud: string;
-  horasPendiente: number | null;
-  comunicaciones: { fecha: string; tipo: string; texto: string }[];
+  assignedTo: string;
+  requestDate: string;
+  pendingHours: number | null;
+  communications: { date: string; type: string; text: string }[];
 }
 
 const STAFF = ["Alejandra Torres", "Carlos Reyes", "María Pérez"];
 
 const mockCots: Cotizacion[] = [
   {
-    id: "COT-448", nombre: "Thomas Berg", email: "thomas@email.de", telefono: "+49 170 1234567",
-    pais: "🇩🇪 Alemania", idioma: "DE", destinos: ["Samaná", "La Romana"],
-    fechaInicio: "5 Jul 2026", fechaFin: "12 Jul 2026", pax: 8, presupuesto: "$3,000–5,000",
+    id: "COT-448", name: "Thomas Berg", email: "thomas@email.de", telefono: "+49 170 1234567",
+    country: "🇩🇪 Alemania", language: "DE", destinos: ["Samaná", "La Romana"],
+    startDate: "5 Jul 2026", endDate: "12 Jul 2026", pax: 8, budget: "$3,000–5,000",
     mensaje: "Buscamos un tour privado para grupo familiar. Preferimos actividades en la naturaleza, sin multitudes. Somos 8 personas, 3 niños.",
-    status: "pending", asignado: "Alejandra Torres", fechaSolicitud: "14 Jun 2026",
-    horasPendiente: 52, comunicaciones: [],
+    status: "pending", assignedTo: "Alejandra Torres", requestDate: "14 Jun 2026",
+    pendingHours: 52, communications: [],
   },
   {
-    id: "COT-447", nombre: "Lucia Moreno", email: "lucia@email.es", telefono: "+34 611 987 654",
-    pais: "🇪🇸 España", idioma: "ES", destinos: ["Samaná"],
-    fechaInicio: "30 Jun 2026", fechaFin: "3 Jul 2026", pax: 4, presupuesto: "$1,500–2,500",
+    id: "COT-447", name: "Lucia Moreno", email: "lucia@email.es", telefono: "+34 611 987 654",
+    country: "🇪🇸 España", language: "ES", destinos: ["Samaná"],
+    startDate: "30 Jun 2026", endDate: "3 Jul 2026", pax: 4, budget: "$1,500–2,500",
     mensaje: "Nos interesa hacer el whale watching y las cascadas El Limón. ¿Pueden combinarlos en un paquete?",
-    status: "sent", asignado: "Carlos Reyes", fechaSolicitud: "15 Jun 2026",
-    horasPendiente: null, comunicaciones: [
-      { fecha: "15 Jun 2026 14:30", tipo: "email", texto: "Cotización COT-447 enviada con propuesta de 2 días en Samaná." },
+    status: "sent", assignedTo: "Carlos Reyes", requestDate: "15 Jun 2026",
+    pendingHours: null, communications: [
+      { date: "15 Jun 2026 14:30", type: "email", text: "Cotización COT-447 enviada con propuesta de 2 días en Samaná." },
     ],
   },
   {
-    id: "COT-446", nombre: "David Kim", email: "david@email.kr", telefono: "+82 10 1234 5678",
-    pais: "🇰🇷 Corea", idioma: "EN", destinos: ["Los Haitises"],
-    fechaInicio: "5 Jul 2026", fechaFin: "5 Jul 2026", pax: 2, presupuesto: "$500–800",
+    id: "COT-446", name: "David Kim", email: "david@email.kr", telefono: "+82 10 1234 5678",
+    country: "🇰🇷 Corea", language: "EN", destinos: ["Los Haitises"],
+    startDate: "5 Jul 2026", endDate: "5 Jul 2026", pax: 2, budget: "$500–800",
     mensaje: "We are looking for a private eco-tour to Los Haitises with an English-speaking guide.",
-    status: "pending", asignado: "Alejandra Torres", fechaSolicitud: "13 Jun 2026",
-    horasPendiente: 70, comunicaciones: [],
+    status: "pending", assignedTo: "Alejandra Torres", requestDate: "13 Jun 2026",
+    pendingHours: 70, communications: [],
   },
   {
-    id: "COT-445", nombre: "Rachel Green", email: "rachel@email.com", telefono: "+1 917 555 0180",
-    pais: "🇺🇸 USA", idioma: "EN", destinos: ["La Romana", "Samaná"],
-    fechaInicio: "28 Jun 2026", fechaFin: "5 Jul 2026", pax: 6, presupuesto: "$4,000+",
+    id: "COT-445", name: "Rachel Green", email: "rachel@email.com", telefono: "+1 917 555 0180",
+    country: "🇺🇸 USA", language: "EN", destinos: ["La Romana", "Samaná"],
+    startDate: "28 Jun 2026", endDate: "5 Jul 2026", pax: 6, budget: "$4,000+",
     mensaje: "Honeymoon + family reunion combo trip. Looking for luxury options.",
-    status: "accepted", asignado: "Alejandra Torres", fechaSolicitud: "12 Jun 2026",
-    horasPendiente: null, comunicaciones: [
-      { fecha: "13 Jun 2026 10:00", tipo: "email", texto: "Cotización enviada con paquete premium 7 días." },
-      { fecha: "14 Jun 2026 16:45", tipo: "email", texto: "Cliente aceptó y realizó depósito del 25%." },
+    status: "accepted", assignedTo: "Alejandra Torres", requestDate: "12 Jun 2026",
+    pendingHours: null, communications: [
+      { date: "13 Jun 2026 10:00", type: "email", text: "Cotización enviada con paquete premium 7 días." },
+      { date: "14 Jun 2026 16:45", type: "email", text: "Cliente aceptó y realizó depósito del 25%." },
     ],
   },
   {
-    id: "COT-444", nombre: "Pierre Moreau", email: "pierre@email.fr", telefono: "+33 6 11 22 33 44",
-    pais: "🇫🇷 Francia", idioma: "FR", destinos: ["Santo Domingo"],
-    fechaInicio: "20 Jun 2026", fechaFin: "20 Jun 2026", pax: 3, presupuesto: "< $500",
+    id: "COT-444", name: "Pierre Moreau", email: "pierre@email.fr", telefono: "+33 6 11 22 33 44",
+    country: "🇫🇷 Francia", language: "FR", destinos: ["Santo Domingo"],
+    startDate: "20 Jun 2026", endDate: "20 Jun 2026", pax: 3, budget: "< $500",
     mensaje: "Tour cultural de Santo Domingo. Guía en francés si es posible.",
-    status: "rejected", asignado: "Carlos Reyes", fechaSolicitud: "11 Jun 2026",
-    horasPendiente: null, comunicaciones: [
-      { fecha: "12 Jun 2026 09:00", tipo: "email", texto: "Cotización enviada. Sin guía en francés disponible." },
-      { fecha: "13 Jun 2026 11:15", tipo: "email", texto: "Cliente rechazó por falta de guía en francés." },
+    status: "rejected", assignedTo: "Carlos Reyes", requestDate: "11 Jun 2026",
+    pendingHours: null, communications: [
+      { date: "12 Jun 2026 09:00", type: "email", text: "Cotización enviada. Sin guía en francés disponible." },
+      { date: "13 Jun 2026 11:15", type: "email", text: "Cliente rechazó por falta de guía en francés." },
     ],
   },
   {
-    id: "COT-443", nombre: "Isabella Costa", email: "isabella@email.br", telefono: "+55 11 91234 5678",
-    pais: "🇧🇷 Brasil", idioma: "PT", destinos: ["Puerto Plata"],
-    fechaInicio: "15 Jul 2026", fechaFin: "17 Jul 2026", pax: 5, presupuesto: "$2,000–3,000",
+    id: "COT-443", name: "Isabella Costa", email: "isabella@email.br", telefono: "+55 11 91234 5678",
+    country: "🇧🇷 Brasil", language: "PT", destinos: ["Puerto Plata"],
+    startDate: "15 Jul 2026", endDate: "17 Jul 2026", pax: 5, budget: "$2,000–3,000",
     mensaje: "Grupo de amigas. Queremos aventura y playa. Presupuesto flexible.",
-    status: "pending", asignado: "María Pérez", fechaSolicitud: "16 Jun 2026",
-    horasPendiente: 8, comunicaciones: [],
+    status: "pending", assignedTo: "María Pérez", requestDate: "16 Jun 2026",
+    pendingHours: 8, communications: [],
   },
 ];
 
@@ -124,12 +124,12 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div>
             <span style={{ fontSize: 22, fontWeight: 800, color: "#0F172A" }}>{cot.id}</span>
-            <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>Solicitada el {cot.fechaSolicitud}</span>
+            <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>Solicitada el {cot.requestDate}</span>
           </div>
           <StatusBadge variant={STATUS_CONF[cot.status].variant} label={STATUS_CONF[cot.status].label} />
-          {cot.horasPendiente && (
+          {cot.pendingHours && (
             <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#F13540", background: "#FEF2F2", padding: "3px 8px", borderRadius: 20 }}>
-              <Clock size={11} /> {cot.horasPendiente}h sin respuesta
+              <Clock size={11} /> {cot.pendingHours}h sin respuesta
             </div>
           )}
         </div>
@@ -146,12 +146,12 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
             </div>
             <div style={{ padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {[
-                { label: "Nombre",   value: cot.nombre    },
-                { label: "Email",    value: cot.email     },
-                { label: "Teléfono", value: cot.telefono  },
-                { label: "País",     value: cot.pais      },
-                { label: "Idioma",   value: cot.idioma    },
-                { label: "Asignado a", value: cot.asignado },
+                { label: "Nombre",   value: cot.name       },
+                { label: "Email",    value: cot.email      },
+                { label: "Teléfono", value: cot.telefono   },
+                { label: "País",     value: cot.country    },
+                { label: "Idioma",   value: cot.language   },
+                { label: "Asignado a", value: cot.assignedTo },
               ].map(f => (
                 <div key={f.label}>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{f.label}</div>
@@ -179,13 +179,13 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
                 </div>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Fechas</div>
-                  <div style={{ fontSize: 13, color: "#0F172A" }}>{cot.fechaInicio}</div>
-                  {cot.fechaFin !== cot.fechaInicio && <div style={{ fontSize: 12, color: "#94A3B8" }}>hasta {cot.fechaFin}</div>}
+                  <div style={{ fontSize: 13, color: "#0F172A" }}>{cot.startDate}</div>
+                  {cot.endDate !== cot.startDate && <div style={{ fontSize: 12, color: "#94A3B8" }}>hasta {cot.endDate}</div>}
                 </div>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Pax / Presupuesto</div>
                   <div style={{ fontSize: 13, color: "#0F172A" }}>{cot.pax} personas</div>
-                  <div style={{ fontSize: 12, color: "#94A3B8" }}>{cot.presupuesto}</div>
+                  <div style={{ fontSize: 12, color: "#94A3B8" }}>{cot.budget}</div>
                 </div>
               </div>
               <div>
@@ -198,21 +198,21 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
           </section>
 
           {/* Comunicaciones previas */}
-          {cot.comunicaciones.length > 0 && (
+          {cot.communications.length > 0 && (
             <section style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
               <div style={{ padding: "12px 16px", borderBottom: "1px solid #E5E7EB", display: "flex", alignItems: "center", gap: 6 }}>
                 <MessageSquare size={13} color="#94A3B8" />
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.06em" }}>Comunicaciones previas</span>
               </div>
               <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-                {cot.comunicaciones.map((c, i) => (
+                {cot.communications.map((c, i) => (
                   <div key={i} style={{ display: "flex", gap: 10 }}>
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Mail size={12} color="#006CFE" />
                     </div>
                     <div>
-                      <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>{c.fecha}</div>
-                      <div style={{ fontSize: 13, color: "#0F172A" }}>{c.texto}</div>
+                      <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 2 }}>{c.date}</div>
+                      <div style={{ fontSize: 13, color: "#0F172A" }}>{c.text}</div>
                     </div>
                   </div>
                 ))}
@@ -323,7 +323,7 @@ export function Cotizaciones() {
   const filtered = mockCots.filter(c => {
     const q = search.toLowerCase();
     const mTab    = c.status === activeTab;
-    const mSearch = !q || c.nombre.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
+    const mSearch = !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
     return mTab && mSearch;
   });
 
@@ -378,10 +378,10 @@ export function Cotizaciones() {
       />
 
       {/* Urgency banner for pending */}
-      {activeTab === "pending" && mockCots.filter(c => c.status === "pending" && (c.horasPendiente ?? 0) > 48).length > 0 && (
+      {activeTab === "pending" && mockCots.filter(c => c.status === "pending" && (c.pendingHours ?? 0) > 48).length > 0 && (
         <div style={{ padding: "10px 16px", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 8, fontSize: 13, color: "#B91C1C", display: "flex", alignItems: "center", gap: 8 }}>
           <Clock size={14} />
-          <strong>{mockCots.filter(c => c.status === "pending" && (c.horasPendiente ?? 0) > 48).length} cotizaciones</strong> llevan más de 48h sin respuesta.
+          <strong>{mockCots.filter(c => c.status === "pending" && (c.pendingHours ?? 0) > 48).length} cotizaciones</strong> llevan más de 48h sin respuesta.
         </div>
       )}
 
@@ -410,7 +410,7 @@ export function Cotizaciones() {
                 >
                   <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontSize: 12 }}>{c.id}</td>
                   <td style={{ padding: "12px 14px" }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: "#0F172A" }}>{c.nombre}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: "#0F172A" }}>{c.name}</div>
                     <div style={{ fontSize: 11, color: "#94A3B8" }}>{c.email}</div>
                   </td>
                   <td style={{ padding: "12px 14px" }}>
@@ -421,7 +421,7 @@ export function Cotizaciones() {
                     </div>
                   </td>
                   <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569", whiteSpace: "nowrap" }}>
-                    {c.fechaInicio}{c.fechaFin !== c.fechaInicio ? ` → ${c.fechaFin}` : ""}
+                    {c.startDate}{c.endDate !== c.startDate ? ` → ${c.endDate}` : ""}
                   </td>
                   <td style={{ padding: "12px 14px", textAlign: "center" }}>
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{c.pax}</span>
@@ -429,15 +429,15 @@ export function Cotizaciones() {
                   <td style={{ padding: "12px 14px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                       <StatusBadge variant={STATUS_CONF[c.status].variant} label={STATUS_CONF[c.status].label} />
-                      {c.horasPendiente && (
-                        <span style={{ fontSize: 10, color: (c.horasPendiente ?? 0) > 48 ? "#F13540" : "#F59E0B", display: "flex", alignItems: "center", gap: 3 }}>
-                          <Clock size={9} />{c.horasPendiente}h
+                      {c.pendingHours && (
+                        <span style={{ fontSize: 10, color: (c.pendingHours ?? 0) > 48 ? "#F13540" : "#F59E0B", display: "flex", alignItems: "center", gap: 3 }}>
+                          <Clock size={9} />{c.pendingHours}h
                         </span>
                       )}
                     </div>
                   </td>
-                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{c.asignado.split(" ")[0]}</td>
-                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8", whiteSpace: "nowrap" }}>{c.fechaSolicitud}</td>
+                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{c.assignedTo.split(" ")[0]}</td>
+                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8", whiteSpace: "nowrap" }}>{c.requestDate}</td>
                   <td style={{ padding: "12px 14px" }} onClick={e => e.stopPropagation()}>
                     <button onClick={() => setDetalle(c)}
                       style={{ padding: "4px 10px", borderRadius: 6, border: "none", background: c.status === "pending" ? "#006CFE" : "#F1F5F9", color: c.status === "pending" ? "#FFFFFF" : "#475569", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>

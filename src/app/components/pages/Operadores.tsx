@@ -8,21 +8,21 @@ import { Btn } from "../ui/Modal";
 /* ── Types & mock ───────────────────────────────────────── */
 interface Operador {
   id: string;
-  nombre: string;
-  tipo: "interno" | "externo";
-  contacto: string;
+  name: string;
+  type: "interno" | "externo";
+  contact: string;
   email: string;
   telefono: string;
-  zona: string;
-  comision: string;
+  zone: string;
+  commission: string;
   numTours: number;
-  reservasActivas: number;
+  activeBookings: number;
   rating: number;
-  ingresosMes: number;
-  reservasMes: number;
+  monthlyRevenue: number;
+  monthlyBookings: number;
   status: "active" | "seasonal" | "review" | "inactive";
-  toursAsignados: string[];
-  notas: string;
+  assignedTours: string[];
+  notes: string;
 }
 
 const TOURS_CATALOG = [
@@ -33,68 +33,68 @@ const TOURS_CATALOG = [
 
 const mockOperadores: Operador[] = [
   {
-    id: "OP-001", nombre: "Caribe Tours", tipo: "externo", contacto: "Pedro Rosario",
-    email: "pedro@caribetours.com", telefono: "+1 809 555 1000", zona: "La Romana / Bayahibe",
-    comision: "15%", numTours: 8, reservasActivas: 34, rating: 4.9,
-    ingresosMes: 890000, reservasMes: 34, status: "active",
-    toursAsignados: ["Isla Saona Full Day", "Laguna Bavaro & Snorkel"],
-    notas: "Operador premium. Prioridad en asignación.",
+    id: "OP-001", name: "Caribe Tours", type: "externo", contact: "Pedro Rosario",
+    email: "pedro@caribetours.com", telefono: "+1 809 555 1000", zone: "La Romana / Bayahibe",
+    commission: "15%", numTours: 8, activeBookings: 34, rating: 4.9,
+    monthlyRevenue: 890000, monthlyBookings: 34, status: "active",
+    assignedTours: ["Isla Saona Full Day", "Laguna Bavaro & Snorkel"],
+    notes: "Operador premium. Prioridad en asignación.",
   },
   {
-    id: "OP-002", nombre: "Aventura RD", tipo: "externo", contacto: "María Santos",
-    email: "maria@aventurard.com", telefono: "+1 809 555 2000", zona: "Samaná",
-    comision: "12%", numTours: 6, reservasActivas: 21, rating: 4.7,
-    ingresosMes: 510000, reservasMes: 21, status: "active",
-    toursAsignados: ["Cascadas El Limón", "Los Haitises Ecoturismo"],
-    notas: "",
+    id: "OP-002", name: "Aventura RD", type: "externo", contact: "María Santos",
+    email: "maria@aventurard.com", telefono: "+1 809 555 2000", zone: "Samaná",
+    commission: "12%", numTours: 6, activeBookings: 21, rating: 4.7,
+    monthlyRevenue: 510000, monthlyBookings: 21, status: "active",
+    assignedTours: ["Cascadas El Limón", "Los Haitises Ecoturismo"],
+    notes: "",
   },
   {
-    id: "OP-003", nombre: "Colonial Tours", tipo: "externo", contacto: "Luis Fernández",
-    email: "luis@colonialtours.com.do", telefono: "+1 809 555 3000", zona: "Santo Domingo",
-    comision: "10%", numTours: 5, reservasActivas: 18, rating: 4.5,
-    ingresosMes: 320000, reservasMes: 18, status: "active",
-    toursAsignados: ["Santo Domingo City Tour", "Cuevas del Pomier"],
-    notas: "",
+    id: "OP-003", name: "Colonial Tours", type: "externo", contact: "Luis Fernández",
+    email: "luis@colonialtours.com.do", telefono: "+1 809 555 3000", zone: "Santo Domingo",
+    commission: "10%", numTours: 5, activeBookings: 18, rating: 4.5,
+    monthlyRevenue: 320000, monthlyBookings: 18, status: "active",
+    assignedTours: ["Santo Domingo City Tour", "Cuevas del Pomier"],
+    notes: "",
   },
   {
-    id: "OP-004", nombre: "Samaná Whale Tours", tipo: "externo", contacto: "Ana Jiménez",
-    email: "ana@whalesamana.com", telefono: "+1 809 555 4000", zona: "Samaná",
-    comision: "18%", numTours: 3, reservasActivas: 12, rating: 4.8,
-    ingresosMes: 480000, reservasMes: 12, status: "seasonal",
-    toursAsignados: ["Whale Watching Samaná", "Tiburones Ballenas"],
-    notas: "Operativo solo ene–mar (temporada ballenas).",
+    id: "OP-004", name: "Samaná Whale Tours", type: "externo", contact: "Ana Jiménez",
+    email: "ana@whalesamana.com", telefono: "+1 809 555 4000", zone: "Samaná",
+    commission: "18%", numTours: 3, activeBookings: 12, rating: 4.8,
+    monthlyRevenue: 480000, monthlyBookings: 12, status: "seasonal",
+    assignedTours: ["Whale Watching Samaná", "Tiburones Ballenas"],
+    notes: "Operativo solo ene–mar (temporada ballenas).",
   },
   {
-    id: "OP-005", nombre: "Eco Caribe", tipo: "externo", contacto: "Roberto Vargas",
-    email: "r.vargas@ecocaribe.do", telefono: "+1 809 555 5000", zona: "Samaná / Hato Mayor",
-    comision: "14%", numTours: 4, reservasActivas: 9, rating: 4.6,
-    ingresosMes: 290000, reservasMes: 9, status: "active",
-    toursAsignados: ["Los Haitises Ecoturismo"],
-    notas: "",
+    id: "OP-005", name: "Eco Caribe", type: "externo", contact: "Roberto Vargas",
+    email: "r.vargas@ecocaribe.do", telefono: "+1 809 555 5000", zone: "Samaná / Hato Mayor",
+    commission: "14%", numTours: 4, activeBookings: 9, rating: 4.6,
+    monthlyRevenue: 290000, monthlyBookings: 9, status: "active",
+    assignedTours: ["Los Haitises Ecoturismo"],
+    notes: "",
   },
   {
-    id: "OP-006", nombre: "Norte Tours", tipo: "externo", contacto: "Carmen López",
-    email: "carmen@nortetours.com", telefono: "+1 809 555 6000", zona: "Puerto Plata",
-    comision: "12%", numTours: 5, reservasActivas: 8, rating: 4.4,
-    ingresosMes: 240000, reservasMes: 8, status: "active",
-    toursAsignados: ["Puerto Plata Adventure"],
-    notas: "",
+    id: "OP-006", name: "Norte Tours", type: "externo", contact: "Carmen López",
+    email: "carmen@nortetours.com", telefono: "+1 809 555 6000", zone: "Puerto Plata",
+    commission: "12%", numTours: 5, activeBookings: 8, rating: 4.4,
+    monthlyRevenue: 240000, monthlyBookings: 8, status: "active",
+    assignedTours: ["Puerto Plata Adventure"],
+    notes: "",
   },
   {
-    id: "OP-007", nombre: "PC Excursiones", tipo: "externo", contacto: "Felipe Marte",
-    email: "f.marte@pcexc.com", telefono: "+1 809 555 7000", zona: "Punta Cana",
-    comision: "10%", numTours: 7, reservasActivas: 6, rating: 4.2,
-    ingresosMes: 160000, reservasMes: 6, status: "review",
-    toursAsignados: ["Laguna Bavaro & Snorkel"],
-    notas: "En proceso de revisión por incidencia con cliente.",
+    id: "OP-007", name: "PC Excursiones", type: "externo", contact: "Felipe Marte",
+    email: "f.marte@pcexc.com", telefono: "+1 809 555 7000", zone: "Punta Cana",
+    commission: "10%", numTours: 7, activeBookings: 6, rating: 4.2,
+    monthlyRevenue: 160000, monthlyBookings: 6, status: "review",
+    assignedTours: ["Laguna Bavaro & Snorkel"],
+    notes: "En proceso de revisión por incidencia con cliente.",
   },
   {
-    id: "OP-008", nombre: "Montaña RD", tipo: "interno", contacto: "Diego Castillo",
-    email: "diego@montanard.com", telefono: "+1 809 555 8000", zona: "Jarabacoa / Constanza",
-    comision: "0%", numTours: 4, reservasActivas: 5, rating: 4.8,
-    ingresosMes: 130000, reservasMes: 5, status: "active",
-    toursAsignados: ["Jarabacoa Rafting"],
-    notas: "Guía interno del equipo Random Trips.",
+    id: "OP-008", name: "Montaña RD", type: "interno", contact: "Diego Castillo",
+    email: "diego@montanard.com", telefono: "+1 809 555 8000", zone: "Jarabacoa / Constanza",
+    commission: "0%", numTours: 4, activeBookings: 5, rating: 4.8,
+    monthlyRevenue: 130000, monthlyBookings: 5, status: "active",
+    assignedTours: ["Jarabacoa Rafting"],
+    notes: "Guía interno del equipo Random Trips.",
   },
 ];
 
@@ -112,29 +112,29 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
   const isNew = !op;
   const [tab, setTab] = useState<OpTab>("info");
   const [o, setO] = useState<Operador>(op ?? {
-    id: "new", nombre: "", tipo: "externo", contacto: "", email: "", telefono: "",
-    zona: "", comision: "10%", numTours: 0, reservasActivas: 0, rating: 0,
-    ingresosMes: 0, reservasMes: 0, status: "active", toursAsignados: [], notas: "",
+    id: "new", name: "", type: "externo", contact: "", email: "", telefono: "",
+    zone: "", commission: "10%", numTours: 0, activeBookings: 0, rating: 0,
+    monthlyRevenue: 0, monthlyBookings: 0, status: "active", assignedTours: [], notes: "",
   });
 
   const toggleTour = (t: string) => {
     setO(prev => ({
       ...prev,
-      toursAsignados: prev.toursAsignados.includes(t)
-        ? prev.toursAsignados.filter(x => x !== t)
-        : [...prev.toursAsignados, t],
+      assignedTours: prev.assignedTours.includes(t)
+        ? prev.assignedTours.filter(x => x !== t)
+        : [...prev.assignedTours, t],
     }));
   };
 
   const TABS: { id: OpTab; label: string }[] = [
-    { id: "info",    label: "Información general" },
-    { id: "tours",   label: "Tours asignados"     },
-    { id: "usuarios", label: "Usuarios CMS"       },
-    { id: "stats",   label: "Estadísticas"        },
+    { id: "info",     label: "Información general" },
+    { id: "tours",    label: "Tours asignados"     },
+    { id: "usuarios", label: "Usuarios CMS"        },
+    { id: "stats",    label: "Estadísticas"        },
   ];
 
   const mockCMSUsers = [
-    { id: "U-1", nombre: op?.contacto || "—", email: op?.email || "—", lastLogin: "Hoy 09:14", rol: "operador" },
+    { id: "U-1", name: op?.contact || "—", email: op?.email || "—", lastLogin: "Hoy 09:14", role: "operador" },
   ];
 
   return (
@@ -145,7 +145,7 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A", margin: 0, flex: 1 }}>
-            {isNew ? "Nuevo operador" : o.nombre}
+            {isNew ? "Nuevo operador" : o.name}
           </h1>
           {!isNew && <StatusBadge variant={STATUS_CONF[o.status].variant} label={STATUS_CONF[o.status].label} />}
           <div style={{ display: "flex", gap: 8 }}>
@@ -173,18 +173,18 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, maxWidth: 700 }}>
           <div style={{ gridColumn: "1 / -1" }}>
             <FormField label="Nombre del operador" required>
-              <Input value={o.nombre} onChange={v => setO(p => ({ ...p, nombre: v }))} placeholder="Caribe Tours" />
+              <Input value={o.name} onChange={v => setO(p => ({ ...p, name: v }))} placeholder="Caribe Tours" />
             </FormField>
           </div>
           <FormField label="Tipo">
             <div style={{ display: "flex", gap: 8 }}>
               {(["interno", "externo"] as const).map(t => (
-                <button key={t} onClick={() => setO(p => ({ ...p, tipo: t }))} style={{
+                <button key={t} onClick={() => setO(p => ({ ...p, type: t }))} style={{
                   flex: 1, padding: "8px 12px", borderRadius: 6, cursor: "pointer",
-                  border: `2px solid ${o.tipo === t ? "#006CFE" : "#E5E7EB"}`,
-                  background: o.tipo === t ? "#EFF6FF" : "#FFFFFF",
-                  color: o.tipo === t ? "#006CFE" : "#475569",
-                  fontSize: 13, fontWeight: o.tipo === t ? 600 : 400, textTransform: "capitalize",
+                  border: `2px solid ${o.type === t ? "#006CFE" : "#E5E7EB"}`,
+                  background: o.type === t ? "#EFF6FF" : "#FFFFFF",
+                  color: o.type === t ? "#006CFE" : "#475569",
+                  fontSize: 13, fontWeight: o.type === t ? 600 : 400, textTransform: "capitalize",
                 }}>
                   {t === "interno" ? "🏠 Interno" : "🤝 Externo"}
                 </button>
@@ -192,10 +192,10 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
             </div>
           </FormField>
           <FormField label="Comisión (%)">
-            <Input value={o.comision} onChange={v => setO(p => ({ ...p, comision: v }))} placeholder="15%" />
+            <Input value={o.commission} onChange={v => setO(p => ({ ...p, commission: v }))} placeholder="15%" />
           </FormField>
           <FormField label="Persona de contacto" required>
-            <Input value={o.contacto} onChange={v => setO(p => ({ ...p, contacto: v }))} placeholder="Pedro Rosario" />
+            <Input value={o.contact} onChange={v => setO(p => ({ ...p, contact: v }))} placeholder="Pedro Rosario" />
           </FormField>
           <FormField label="Email">
             <Input value={o.email} onChange={v => setO(p => ({ ...p, email: v }))} type="email" placeholder="pedro@operador.com" />
@@ -205,7 +205,7 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
           </FormField>
           <div style={{ gridColumn: "1 / -1" }}>
             <FormField label="Zona de operación">
-              <Input value={o.zona} onChange={v => setO(p => ({ ...p, zona: v }))} placeholder="La Romana / Bayahibe" />
+              <Input value={o.zone} onChange={v => setO(p => ({ ...p, zone: v }))} placeholder="La Romana / Bayahibe" />
             </FormField>
           </div>
           <FormField label="Estado">
@@ -215,7 +215,7 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
           </FormField>
           <div style={{ gridColumn: "1 / -1" }}>
             <FormField label="Notas internas">
-              <Textarea value={o.notas} onChange={v => setO(p => ({ ...p, notas: v }))} rows={3} placeholder="Notas sobre el operador..." />
+              <Textarea value={o.notes} onChange={v => setO(p => ({ ...p, notes: v }))} rows={3} placeholder="Notas sobre el operador..." />
             </FormField>
           </div>
         </div>
@@ -227,10 +227,9 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
           <div style={{ fontSize: 13, color: "#475569" }}>
             Selecciona los tours del catálogo que gestiona este operador.
           </div>
-          {/* Selected chips */}
-          {o.toursAsignados.length > 0 && (
+          {o.assignedTours.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {o.toursAsignados.map(t => (
+              {o.assignedTours.map(t => (
                 <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: "#EFF6FF", border: "1px solid #BFDBFE", fontSize: 12, color: "#1D4ED8" }}>
                   {t}
                   <button onClick={() => toggleTour(t)} style={{ border: "none", background: "transparent", cursor: "pointer", padding: 0, display: "flex" }}>
@@ -240,10 +239,9 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
               ))}
             </div>
           )}
-          {/* All tours grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
             {TOURS_CATALOG.map(t => {
-              const sel = o.toursAsignados.includes(t);
+              const sel = o.assignedTours.includes(t);
               return (
                 <button key={t} onClick={() => toggleTour(t)} style={{
                   display: "flex", alignItems: "center", gap: 10, padding: "12px 14px",
@@ -265,7 +263,7 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
       {tab === "usuarios" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontSize: 13, color: "#475569" }}>Cuentas de acceso al CMS con rol "Operador" vinculadas a {o.nombre}.</div>
+            <div style={{ fontSize: 13, color: "#475569" }}>Cuentas de acceso al CMS con rol "Operador" vinculadas a {o.name}.</div>
             <Btn variant="primary" size="sm"><Plus size={13} /> Invitar usuario</Btn>
           </div>
           <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
@@ -280,7 +278,7 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
               <tbody>
                 {mockCMSUsers.map(u => (
                   <tr key={u.id}>
-                    <td style={{ padding: "12px 14px", fontWeight: 500, fontSize: 13, color: "#0F172A" }}>{u.nombre}</td>
+                    <td style={{ padding: "12px 14px", fontWeight: 500, fontSize: 13, color: "#0F172A" }}>{u.name}</td>
                     <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{u.email}</td>
                     <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{u.lastLogin}</td>
                     <td style={{ padding: "12px 14px" }}><StatusBadge variant="neutral" label="Operador" /></td>
@@ -300,10 +298,10 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {[
-              { label: "Reservas este mes", value: o.reservasMes,                     icon: <Calendar size={16} color="#006CFE" />, bg: "#EFF6FF"  },
-              { label: "Ingresos generados", value: `RD$ ${(o.ingresosMes/1000).toFixed(0)}k`, icon: <TrendingUp size={16} color="#16A34A" />, bg: "#F0FDF4" },
-              { label: "Tours activos",      value: o.numTours,                       icon: <Package size={16} color="#9333EA" />, bg: "#F5F3FF"  },
-              { label: "Rating promedio",    value: `⭐ ${o.rating}`,                icon: <Star size={16} color="#F59E0B" />,   bg: "#FFFBEB"  },
+              { label: "Reservas este mes", value: o.monthlyBookings,                              icon: <Calendar size={16} color="#006CFE" />, bg: "#EFF6FF" },
+              { label: "Ingresos generados", value: `RD$ ${(o.monthlyRevenue/1000).toFixed(0)}k`, icon: <TrendingUp size={16} color="#16A34A" />, bg: "#F0FDF4" },
+              { label: "Tours activos",      value: o.numTours,                                    icon: <Package size={16} color="#9333EA" />, bg: "#F5F3FF" },
+              { label: "Rating promedio",    value: `⭐ ${o.rating}`,                             icon: <Star size={16} color="#F59E0B" />,   bg: "#FFFBEB" },
             ].map(k => (
               <div key={k.label} style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "16px 18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -347,10 +345,10 @@ export function Operadores() {
 
   const filtered = mockOperadores.filter(o => {
     const q = search.toLowerCase();
-    const mSearch = !q || o.nombre.toLowerCase().includes(q) || o.zona.toLowerCase().includes(q);
+    const mSearch = !q || o.name.toLowerCase().includes(q) || o.zone.toLowerCase().includes(q);
     const mStatus = !filters.status || o.status === filters.status;
-    const mTipo   = !filters.tipo   || o.tipo   === filters.tipo;
-    return mSearch && mStatus && mTipo;
+    const mType   = !filters.type   || o.type   === filters.type;
+    return mSearch && mStatus && mType;
   });
 
   return (
@@ -358,7 +356,7 @@ export function Operadores() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <FilterBar
           filters={[
-            { key: "tipo",   label: "Tipo",   type: "select", options: [{ value: "interno", label: "Interno" }, { value: "externo", label: "Externo" }] },
+            { key: "type",   label: "Tipo",   type: "select", options: [{ value: "interno", label: "Interno" }, { value: "externo", label: "Externo" }] },
             { key: "status", label: "Estado", type: "select", options: Object.entries(STATUS_CONF).map(([v, s]) => ({ value: v, label: s.label })) },
           ]}
           values={filters}
@@ -392,23 +390,23 @@ export function Operadores() {
                 onClick={() => setEditor({ open: true, op })}
               >
                 <td style={{ padding: "12px 14px" }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{op.nombre}</div>
-                  <div style={{ fontSize: 11, color: "#94A3B8" }}>{op.contacto} · {op.email}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{op.name}</div>
+                  <div style={{ fontSize: 11, color: "#94A3B8" }}>{op.contact} · {op.email}</div>
                 </td>
                 <td style={{ padding: "12px 14px" }}>
-                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: op.tipo === "interno" ? "#F0FDF4" : "#F5F3FF", color: op.tipo === "interno" ? "#15803D" : "#7C3AED" }}>
-                    {op.tipo === "interno" ? "🏠 Interno" : "🤝 Externo"}
+                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: op.type === "interno" ? "#F0FDF4" : "#F5F3FF", color: op.type === "interno" ? "#15803D" : "#7C3AED" }}>
+                    {op.type === "interno" ? "🏠 Interno" : "🤝 Externo"}
                   </span>
                 </td>
-                <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{op.zona}</td>
+                <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{op.zone}</td>
                 <td style={{ padding: "12px 14px", textAlign: "center" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
                     <Package size={12} color="#94A3B8" /><span style={{ fontWeight: 700 }}>{op.numTours}</span>
                   </div>
                 </td>
                 <td style={{ padding: "12px 14px", textAlign: "center" }}>
-                  {op.reservasActivas > 0
-                    ? <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: "50%", background: "#EFF6FF", color: "#006CFE", fontSize: 12, fontWeight: 700 }}>{op.reservasActivas}</span>
+                  {op.activeBookings > 0
+                    ? <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: "50%", background: "#EFF6FF", color: "#006CFE", fontSize: 12, fontWeight: 700 }}>{op.activeBookings}</span>
                     : <span style={{ color: "#CBD5E1" }}>—</span>}
                 </td>
                 <td style={{ padding: "12px 14px" }}>
@@ -417,7 +415,7 @@ export function Operadores() {
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{op.rating}</span>
                   </div>
                 </td>
-                <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{op.comision}</td>
+                <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{op.commission}</td>
                 <td style={{ padding: "12px 14px" }}>
                   <StatusBadge variant={STATUS_CONF[op.status].variant} label={STATUS_CONF[op.status].label} />
                 </td>

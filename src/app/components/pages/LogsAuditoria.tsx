@@ -5,27 +5,27 @@ interface LogEntry {
   id: string;
   timestamp: string;
   actor: string;
-  accion: string;
-  entidad: string;
-  idEntidad: string;
+  action: string;
+  entity: string;
+  entityId: string;
   before?: Record<string, string>;
   after?: Record<string, string>;
 }
 
 const mockLogs: LogEntry[] = [
-  { id: "L-001", timestamp: "16 Jun 2026 09:14:32", actor: "Alejandra Torres", accion: "CREAR",       entidad: "Reserva",     idEntidad: "RT-2841", before: undefined, after: { status: "pending", pax: "4", total: "212400" } },
-  { id: "L-002", timestamp: "16 Jun 2026 09:15:01", actor: "Sistema",          accion: "EMAIL",        entidad: "Reserva",     idEntidad: "RT-2841", before: undefined, after: { tipo: "Confirmación de reserva", destinatario: "sarah@email.com" } },
-  { id: "L-003", timestamp: "16 Jun 2026 09:33:18", actor: "Alejandra Torres", accion: "ACTUALIZAR",   entidad: "Tour",        idEntidad: "T-001",   before: { precio: "3200" }, after: { precio: "3500" } },
-  { id: "L-004", timestamp: "15 Jun 2026 16:45:11", actor: "Carlos Reyes",     accion: "ACTUALIZAR",   entidad: "Cotización",  idEntidad: "COT-445", before: { status: "pending" }, after: { status: "sent" } },
-  { id: "L-005", timestamp: "15 Jun 2026 15:10:23", actor: "Pedro Rosario",    accion: "ACTUALIZAR",   entidad: "Disponibilidad", idEntidad: "T-001-2026-06-18", before: { paxLibres: "12" }, after: { paxLibres: "8" } },
-  { id: "L-006", timestamp: "14 Jun 2026 11:22:45", actor: "Alejandra Torres", accion: "ELIMINAR",     entidad: "Testimonio",  idEntidad: "T-008",   before: { cliente: "Marc F.", rating: "2" }, after: undefined },
-  { id: "L-007", timestamp: "14 Jun 2026 10:05:30", actor: "María Pérez",      accion: "CREAR",        entidad: "Testimonio",  idEntidad: "T-009",   before: undefined, after: { cliente: "Sofia G.", status: "draft" } },
-  { id: "L-008", timestamp: "13 Jun 2026 17:58:12", actor: "Sistema",          accion: "EMAIL",        entidad: "Cotización",  idEntidad: "COT-447", before: undefined, after: { tipo: "Cotización enviada", destinatario: "lucia@email.es" } },
-  { id: "L-009", timestamp: "13 Jun 2026 09:00:00", actor: "Carlos Reyes",     accion: "ACTUALIZAR",   entidad: "Tasa cambio", idEntidad: "USD",     before: { tasa: "59.20" }, after: { tasa: "59.50" } },
-  { id: "L-010", timestamp: "12 Jun 2026 14:20:18", actor: "Alejandra Torres", accion: "CREAR",        entidad: "Usuario CMS", idEntidad: "U-008",   before: undefined, after: { email: "nuevo@partner.com", rol: "operador" } },
+  { id: "L-001", timestamp: "16 Jun 2026 09:14:32", actor: "Alejandra Torres", action: "CREAR",       entity: "Reserva",        entityId: "RT-2841", before: undefined, after: { status: "pending", pax: "4", total: "212400" } },
+  { id: "L-002", timestamp: "16 Jun 2026 09:15:01", actor: "Sistema",          action: "EMAIL",        entity: "Reserva",        entityId: "RT-2841", before: undefined, after: { type: "Confirmación de reserva", recipient: "sarah@email.com" } },
+  { id: "L-003", timestamp: "16 Jun 2026 09:33:18", actor: "Alejandra Torres", action: "ACTUALIZAR",   entity: "Tour",           entityId: "T-001",   before: { price: "3200" }, after: { price: "3500" } },
+  { id: "L-004", timestamp: "15 Jun 2026 16:45:11", actor: "Carlos Reyes",     action: "ACTUALIZAR",   entity: "Cotización",     entityId: "COT-445", before: { status: "pending" }, after: { status: "sent" } },
+  { id: "L-005", timestamp: "15 Jun 2026 15:10:23", actor: "Pedro Rosario",    action: "ACTUALIZAR",   entity: "Disponibilidad", entityId: "T-001-2026-06-18", before: { availableSeats: "12" }, after: { availableSeats: "8" } },
+  { id: "L-006", timestamp: "14 Jun 2026 11:22:45", actor: "Alejandra Torres", action: "ELIMINAR",     entity: "Testimonio",     entityId: "T-008",   before: { customer: "Marc F.", rating: "2" }, after: undefined },
+  { id: "L-007", timestamp: "14 Jun 2026 10:05:30", actor: "María Pérez",      action: "CREAR",        entity: "Testimonio",     entityId: "T-009",   before: undefined, after: { customer: "Sofia G.", status: "draft" } },
+  { id: "L-008", timestamp: "13 Jun 2026 17:58:12", actor: "Sistema",          action: "EMAIL",        entity: "Cotización",     entityId: "COT-447", before: undefined, after: { type: "Cotización enviada", recipient: "lucia@email.es" } },
+  { id: "L-009", timestamp: "13 Jun 2026 09:00:00", actor: "Carlos Reyes",     action: "ACTUALIZAR",   entity: "Tasa cambio",    entityId: "USD",     before: { rate: "59.20" }, after: { rate: "59.50" } },
+  { id: "L-010", timestamp: "12 Jun 2026 14:20:18", actor: "Alejandra Torres", action: "CREAR",        entity: "Usuario CMS",    entityId: "U-008",   before: undefined, after: { email: "nuevo@partner.com", role: "operador" } },
 ];
 
-const ACCION_CONF: Record<string, { color: string; bg: string }> = {
+const ACTION_CONF: Record<string, { color: string; bg: string }> = {
   CREAR:      { color: "#15803D", bg: "#DCFCE7" },
   ACTUALIZAR: { color: "#1D4ED8", bg: "#DBEAFE" },
   ELIMINAR:   { color: "#B91C1C", bg: "#FEE2E2" },
@@ -52,10 +52,10 @@ function DiffDrawer({ log, onClose }: { log: LogEntry; onClose: () => void }) {
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20, fontSize: 12 }}>
             {[
-              { label: "Actor", value: log.actor },
-              { label: "Acción", value: log.accion },
-              { label: "Entidad", value: log.entidad },
-              { label: "ID", value: log.idEntidad },
+              { label: "Actor",   value: log.actor    },
+              { label: "Acción",  value: log.action   },
+              { label: "Entidad", value: log.entity   },
+              { label: "ID",      value: log.entityId },
             ].map(f => (
               <div key={f.label}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{f.label}</div>
@@ -98,19 +98,19 @@ function DiffDrawer({ log, onClose }: { log: LogEntry; onClose: () => void }) {
 }
 
 export function LogsAuditoria() {
-  const [activeLog, setActiveLog] = useState<LogEntry | null>(null);
+  const [activeLog, setActiveLog]       = useState<LogEntry | null>(null);
   const [filterActor, setFilterActor]   = useState("");
-  const [filterAccion, setFilterAccion] = useState("");
-  const [filterEntidad, setFilterEntidad] = useState("");
+  const [filterAction, setFilterAction] = useState("");
+  const [filterEntity, setFilterEntity] = useState("");
 
   const actors   = [...new Set(mockLogs.map(l => l.actor))];
-  const acciones = [...new Set(mockLogs.map(l => l.accion))];
-  const entidades= [...new Set(mockLogs.map(l => l.entidad))];
+  const actions  = [...new Set(mockLogs.map(l => l.action))];
+  const entities = [...new Set(mockLogs.map(l => l.entity))];
 
   const filtered = mockLogs.filter(l =>
-    (!filterActor   || l.actor   === filterActor) &&
-    (!filterAccion  || l.accion  === filterAccion) &&
-    (!filterEntidad || l.entidad === filterEntidad)
+    (!filterActor  || l.actor  === filterActor) &&
+    (!filterAction || l.action === filterAction) &&
+    (!filterEntity || l.entity === filterEntity)
   );
 
   return (
@@ -120,9 +120,9 @@ export function LogsAuditoria() {
       {/* Filters */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {[
-          { label: "Actor",   val: filterActor,   set: setFilterActor,   opts: actors    },
-          { label: "Acción",  val: filterAccion,  set: setFilterAccion,  opts: acciones  },
-          { label: "Entidad", val: filterEntidad, set: setFilterEntidad, opts: entidades },
+          { label: "Actor",   val: filterActor,  set: setFilterActor,  opts: actors   },
+          { label: "Acción",  val: filterAction, set: setFilterAction, opts: actions  },
+          { label: "Entidad", val: filterEntity, set: setFilterEntity, opts: entities },
         ].map(f => (
           <select key={f.label} value={f.val} onChange={e => f.set(e.target.value)}
             style={{ padding: "6px 12px", border: `1px solid ${f.val ? "#006CFE" : "#E5E7EB"}`, borderRadius: 6, fontSize: 13, background: f.val ? "#EFF6FF" : "#FFFFFF", color: f.val ? "#006CFE" : "#475569", outline: "none", cursor: "pointer" }}>
@@ -130,8 +130,8 @@ export function LogsAuditoria() {
             {f.opts.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
         ))}
-        {(filterActor || filterAccion || filterEntidad) && (
-          <button onClick={() => { setFilterActor(""); setFilterAccion(""); setFilterEntidad(""); }}
+        {(filterActor || filterAction || filterEntity) && (
+          <button onClick={() => { setFilterActor(""); setFilterAction(""); setFilterEntity(""); }}
             style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #E5E7EB", background: "#FFFFFF", fontSize: 12, color: "#94A3B8", cursor: "pointer" }}>
             Limpiar
           </button>
@@ -151,7 +151,7 @@ export function LogsAuditoria() {
           </thead>
           <tbody>
             {filtered.map((log, i) => {
-              const ac = ACCION_CONF[log.accion] || ACCION_CONF.ACTUALIZAR;
+              const ac = ACTION_CONF[log.action] || ACTION_CONF.ACTUALIZAR;
               return (
                 <tr key={log.id}
                   onClick={() => setActiveLog(log)}
@@ -162,10 +162,10 @@ export function LogsAuditoria() {
                   <td style={{ padding: "11px 14px", fontSize: 12, color: "#94A3B8", whiteSpace: "nowrap", fontFamily: "monospace" }}>{log.timestamp}</td>
                   <td style={{ padding: "11px 14px", fontSize: 13, fontWeight: 500, color: "#0F172A" }}>{log.actor}</td>
                   <td style={{ padding: "11px 14px" }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: ac.bg, color: ac.color }}>{log.accion}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: ac.bg, color: ac.color }}>{log.action}</span>
                   </td>
-                  <td style={{ padding: "11px 14px", fontSize: 13, color: "#475569" }}>{log.entidad}</td>
-                  <td style={{ padding: "11px 14px", fontWeight: 600, color: "#006CFE", fontSize: 12 }}>{log.idEntidad}</td>
+                  <td style={{ padding: "11px 14px", fontSize: 13, color: "#475569" }}>{log.entity}</td>
+                  <td style={{ padding: "11px 14px", fontWeight: 600, color: "#006CFE", fontSize: 12 }}>{log.entityId}</td>
                   <td style={{ padding: "11px 14px" }}>
                     <ChevronRight size={14} color="#CBD5E1" />
                   </td>
