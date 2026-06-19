@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Bilingual } from "../../data/types";
 
 interface FormFieldProps {
   label: string;
@@ -133,29 +134,31 @@ export function SelectField({ value, onChange, options, placeholder = "Seleccion
 }
 
 interface BilingualFieldProps {
+  value: Bilingual;
+  onChange: (v: Bilingual) => void;
   labelES?: string;
   labelEN?: string;
-  valueES?: string;
-  valueEN?: string;
-  onChangeES?: (v: string) => void;
-  onChangeEN?: (v: string) => void;
   multiline?: boolean;
   rows?: number;
   placeholder?: string;
+  placeholderEn?: string;
 }
 
 export function BilingualField({
+  value,
+  onChange,
   labelES = "Español",
   labelEN = "English",
-  valueES = "",
-  valueEN = "",
-  onChangeES,
-  onChangeEN,
   multiline = false,
   rows = 3,
   placeholder = "",
+  placeholderEn,
 }: BilingualFieldProps) {
   const [tab, setTab] = useState<"es" | "en">("es");
+  const safe: Bilingual = value ?? { es: "", en: "" };
+
+  const setEs = (v: string) => onChange({ ...safe, es: v });
+  const setEn = (v: string) => onChange({ ...safe, en: v });
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: "5px 12px",
@@ -179,16 +182,16 @@ export function BilingualField({
       <div style={{ padding: 8 }}>
         {multiline ? (
           <Textarea
-            value={tab === "es" ? valueES : valueEN}
-            onChange={tab === "es" ? onChangeES : onChangeEN}
-            placeholder={placeholder}
+            value={tab === "es" ? safe.es : safe.en}
+            onChange={tab === "es" ? setEs : setEn}
+            placeholder={tab === "es" ? placeholder : (placeholderEn ?? placeholder)}
             rows={rows}
           />
         ) : (
           <Input
-            value={tab === "es" ? valueES : valueEN}
-            onChange={tab === "es" ? onChangeES : onChangeEN}
-            placeholder={placeholder}
+            value={tab === "es" ? safe.es : safe.en}
+            onChange={tab === "es" ? setEs : setEn}
+            placeholder={tab === "es" ? placeholder : (placeholderEn ?? placeholder)}
           />
         )}
       </div>
