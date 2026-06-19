@@ -35,7 +35,7 @@ function makeSlot(av: typeof AVAILABILITY[0]): DaySlot {
     color: TOUR_COLORS[av.tour_id] || "#006CFE",
     paxLibres: av.cupos_libres, paxTotal: av.cupos_totales,
     status, horasSalida: t.logistica.hora_salida,
-    precio: formatDOP(t.pricing_model.price_per_person) + "/p",
+    precio: t.pricing,
   };
 }
 
@@ -341,7 +341,7 @@ function TourCalendar({ tourId, year, month, onYearMonth, onBack }: {
             <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A", margin: 0 }}>{tour.titulo_es}</h2>
           </div>
           <div style={{ fontSize: 12, color: "#94A3B8", marginTop: 3 }}>
-            Capacidad: {tour.capacidad_max} pax · {formatDOP(tour.pricing_model.price_per_person)}/p · Salida: {tour.logistica.hora_salida}
+            Capacidad: {tour.capacidad_max} pax · {tour.pricing} · Salida: {tour.logistica.hora_salida}
           </div>
           {av && (
             <div style={{ marginTop: 6, display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: "#EFF6FF", border: "1px solid #BFDBFE", fontSize: 12, color: "#006CFE" }}>

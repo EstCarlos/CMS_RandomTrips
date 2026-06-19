@@ -46,7 +46,7 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
         <FilterBar
           filters={[
             { key: "tipo", label: "Tipo", type: "select", options: [
-              { value: "fijo", label: "🎯 Fijo" }, { value: "customizable", label: "🔀 Customizable" }, { value: "privado", label: "📩 Privado" },
+              { value: "fijo", label: "🎯 Fijo" }, { value: "multi_dia", label: "🗓️ Multi-día" }, { value: "privado", label: "📩 Privado" },
             ]},
             { key: "status", label: "Estado", type: "select", options:
               Object.entries(statusConfig).map(([v, s]) => ({ value: v, label: s.label }))
@@ -128,7 +128,7 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
                     </td>
                     {/* Precio */}
                     <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                      {formatDOP(t.pricing_model.price_per_person)}<span style={{ fontWeight: 400, fontSize: 11, color: "#94A3B8" }}>/p</span>
+                      {t.pricing}
                     </td>
                     {/* Destinos */}
                     <td style={{ padding: "12px 14px" }}>

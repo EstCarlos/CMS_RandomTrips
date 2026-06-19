@@ -194,7 +194,7 @@ export default function App() {
 
         <main style={{ flex: 1, padding: isEditorOpen ? "20px 28px 0" : "24px 28px", maxWidth: 1440 }}>
           {isEditorOpen ? (
-            <TourEditor onBack={() => { setCurrentPage("tours"); setEditingTourId(null); }} />
+            <TourEditor onBack={() => { setCurrentPage("tours"); setEditingTourId(null); }} tourId={editingTourId ?? undefined} />
           ) : (
             <PageContent
               page={currentPage}

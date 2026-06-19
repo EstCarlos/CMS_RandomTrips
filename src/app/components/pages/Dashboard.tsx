@@ -287,7 +287,7 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
                   <div>
                     <div style={{ fontWeight: 700, color: "#0F172A" }}>{t.titulo_es}</div>
                     <div style={{ color: "#94A3B8", fontSize: 11 }}>
-                      {AVAILABILITY.find(a => a.tour_id === t.id)?.fecha_display} · {bks.length} reservas · {formatDOP(t.pricing_model.price_per_person)}/p
+                      {AVAILABILITY.find(a => a.tour_id === t.id)?.fecha_display} · {bks.length} reservas · {t.pricing}
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
