@@ -4,9 +4,9 @@ import { StatusBadge } from "../ui/StatusBadge";
 import { FilterBar } from "../ui/FilterBar";
 import { FormField, Input, SelectField, BilingualField } from "../ui/FormField";
 import { Btn } from "../ui/Modal";
-import { EXPERIENCES, DESTINATIONS } from "../../data/realData";
+import { EXPERIENCES, DESTINATIONS, findDestination } from "../../data/realData";
 
-type Exp = typeof EXPERIENCES[0];
+type Exp = Omit<typeof EXPERIENCES[0], "status"> & { status: "published" | "draft" | "archived" };
 
 const tipoEmoji: Record<string, string> = {
   "Montaña": "⛰️", "Aventura": "🧗", "Acuática": "🤿", "Cultural": "🏛️",
@@ -23,8 +23,8 @@ const statusConf: Record<string, { variant: "success" | "neutral" | "warning"; l
 function ExperienciaEditor({ exp, onBack }: { exp: Exp | null; onBack: () => void }) {
   const isNew = !exp;
   const [e, setE] = useState<Exp>(exp ?? {
-    id: "new", destination_id: "", destinoPadre: "", nombre_es: "", nombre_en: "",
-    descripcion_es: "", descripcion_en: "", tipo: "", duracion: "", precio_base: 0, numTours: 0, status: "draft" as const,
+    id: "new", destinationId: "", name: { es: "", en: "" },
+    description: { es: "", en: "" }, type: "", duration: "", basePrice: 0, tourCount: 0, status: "draft" as const,
   });
 
   return (
@@ -34,10 +34,10 @@ function ExperienciaEditor({ exp, onBack }: { exp: Exp | null; onBack: () => voi
           <button onClick={onBack} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#94A3B8", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
             <ArrowLeft size={12} /> Experiencias
           </button>
-          <span>/</span><span style={{ color: "#0F172A" }}>{isNew ? "Nueva experiencia" : e.nombre_es}</span>
+          <span>/</span><span style={{ color: "#0F172A" }}>{isNew ? "Nueva experiencia" : e.name.es}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A", margin: 0, flex: 1 }}>{isNew ? "Nueva experiencia" : e.nombre_es}</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A", margin: 0, flex: 1 }}>{isNew ? "Nueva experiencia" : e.name.es}</h1>
           <StatusBadge variant={statusConf[e.status].variant} label={statusConf[e.status].label} />
           <div style={{ display: "flex", gap: 8 }}>
             <Btn variant="secondary" size="sm"><Save size={13} /> Guardar borrador</Btn>
@@ -48,31 +48,31 @@ function ExperienciaEditor({ exp, onBack }: { exp: Exp | null; onBack: () => voi
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 700 }}>
         <FormField label="Nombre de la experiencia" required>
-          <BilingualField valueES={e.nombre_es} valueEN={e.nombre_en} onChangeES={v => setE(p => ({...p, nombre_es: v}))} onChangeEN={v => setE(p => ({...p, nombre_en: v}))} placeholder="Nombre de la experiencia..." />
+          <BilingualField value={e.name} onChange={v => setE(p => ({...p, name: v}))} placeholder="Nombre de la experiencia..." />
         </FormField>
         <FormField label="Descripción">
-          <BilingualField valueES={e.descripcion_es} valueEN={e.descripcion_en} onChangeES={v => setE(p => ({...p, descripcion_es: v}))} onChangeEN={v => setE(p => ({...p, descripcion_en: v}))} multiline rows={4} placeholder="Descripción detallada..." />
+          <BilingualField value={e.description} onChange={v => setE(p => ({...p, description: v}))} multiline rows={4} placeholder="Descripción detallada..." />
         </FormField>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <FormField label="Destino padre" required>
-            <SelectField value={e.destination_id} onChange={v => { const dest = DESTINATIONS.find(d => d.id === v); setE(p => ({...p, destination_id: v, destinoPadre: dest?.nombre_es || ""})); }}
-              options={DESTINATIONS.map(d => ({ value: d.id, label: d.nombre_es }))} placeholder="Seleccionar destino..." />
+            <SelectField value={e.destinationId} onChange={v => setE(p => ({...p, destinationId: v}))}
+              options={DESTINATIONS.map(d => ({ value: d.id, label: d.name.es }))} placeholder="Seleccionar destino..." />
           </FormField>
           <FormField label="Tipo" required>
-            <SelectField value={e.tipo} onChange={v => setE(p => ({...p, tipo: v}))}
+            <SelectField value={e.type} onChange={v => setE(p => ({...p, type: v}))}
               options={Object.entries(tipoEmoji).map(([k, icon]) => ({ value: k, label: `${icon} ${k}` }))} placeholder="Seleccionar tipo..." />
           </FormField>
         </div>
         <FormField label="Duración estimada" helper="Ej: 4–5 horas, Full day">
           <div style={{ display: "flex", alignItems: "center", gap: 8, maxWidth: 200 }}>
             <Clock size={14} color="#94A3B8" style={{ flexShrink: 0 }} />
-            <Input value={e.duracion} onChange={v => setE(p => ({...p, duracion: v}))} placeholder="4–5 horas" />
+            <Input value={e.duration} onChange={v => setE(p => ({...p, duration: v}))} placeholder="4–5 horas" />
           </div>
         </FormField>
 
-        {e.numTours > 0 && (
+        {e.tourCount > 0 && (
           <div style={{ padding: "12px 16px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8, fontSize: 13, color: "#006CFE" }}>
-            Esta experiencia está incluida en <strong>{e.numTours} tour{e.numTours > 1 ? "s" : ""}</strong> del catálogo.
+            Esta experiencia está incluida en <strong>{e.tourCount} tour{e.tourCount > 1 ? "s" : ""}</strong> del catálogo.
           </div>
         )}
 
@@ -105,9 +105,9 @@ export function Experiencias() {
 
   const filtered = EXPERIENCES.filter(e => {
     const q = search.toLowerCase();
-    return (!q || e.nombre_es.toLowerCase().includes(q) || e.destinoPadre.toLowerCase().includes(q))
-      && (!filters.destino || e.destination_id === filters.destino)
-      && (!filters.tipo    || e.tipo           === filters.tipo)
+    return (!q || e.name.es.toLowerCase().includes(q) || (findDestination(e.destinationId)?.name.es.toLowerCase() ?? "").includes(q))
+      && (!filters.destino || e.destinationId === filters.destino)
+      && (!filters.type    || e.type          === filters.type)
       && (!filters.status  || e.status         === filters.status);
   });
 
@@ -116,8 +116,8 @@ export function Experiencias() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <FilterBar
           filters={[
-            { key: "destino", label: "Destino", type: "select", options: DESTINATIONS.map(d => ({ value: d.id, label: d.nombre_es })) },
-            { key: "tipo",    label: "Tipo",    type: "select", options: Object.keys(tipoEmoji).map(t => ({ value: t, label: t })) },
+            { key: "destino", label: "Destino", type: "select", options: DESTINATIONS.map(d => ({ value: d.id, label: d.name.es })) },
+            { key: "type",    label: "Tipo",    type: "select", options: Object.keys(tipoEmoji).map(t => ({ value: t, label: t })) },
             { key: "status",  label: "Estado",  type: "select", options: Object.entries(statusConf).map(([v, s]) => ({ value: v, label: s.label })) },
           ]}
           values={filters}
@@ -161,24 +161,24 @@ export function Experiencias() {
                   <td style={{ padding: "12px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 32, height: 32, borderRadius: 6, background: "#F0FDF4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
-                        {tipoEmoji[exp.tipo] || "✨"}
+                        {tipoEmoji[exp.type] || "✨"}
                       </div>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{exp.nombre_es}</div>
-                        <div style={{ fontSize: 11, color: "#94A3B8" }}>{exp.nombre_en}</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{exp.name.es}</div>
+                        <div style={{ fontSize: 11, color: "#94A3B8" }}>{exp.name.en}</div>
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, color: "#475569" }}>{exp.destinoPadre}</td>
+                  <td style={{ padding: "12px 16px", fontSize: 13, color: "#475569" }}>{findDestination(exp.destinationId)?.name.es ?? ""}</td>
                   <td style={{ padding: "12px 16px" }}>
-                    <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 20, background: "#F1F5F9", color: "#475569" }}>{exp.tipo}</span>
+                    <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 20, background: "#F1F5F9", color: "#475569" }}>{exp.type}</span>
                   </td>
                   <td style={{ padding: "12px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "#475569" }}>
-                      <Clock size={11} color="#94A3B8" /> {exp.duracion}
+                      <Clock size={11} color="#94A3B8" /> {exp.duration}
                     </div>
                   </td>
-                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, fontSize: 13, color: exp.numTours > 0 ? "#0F172A" : "#CBD5E1" }}>{exp.numTours}</td>
+                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, fontSize: 13, color: exp.tourCount > 0 ? "#0F172A" : "#CBD5E1" }}>{exp.tourCount}</td>
                   <td style={{ padding: "12px 16px" }}>
                     <StatusBadge variant={statusConf[exp.status].variant} label={statusConf[exp.status].label} />
                   </td>

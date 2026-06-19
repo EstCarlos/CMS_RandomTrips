@@ -1,47 +1,46 @@
 import { useState } from "react";
-import { Plus, ChevronDown, ChevronRight, Edit2, Trash2, X, Check, GripVertical } from "lucide-react";
+import { Plus, ChevronDown, ChevronRight, Edit2, Trash2, X, GripVertical } from "lucide-react";
 import { StatusBadge } from "../ui/StatusBadge";
 import { BilingualField, FormField } from "../ui/FormField";
 import { Btn } from "../ui/Modal";
+import type { Bilingual } from "../../data/types";
 
 /* ── Types & mock ───────────────────────────────────────── */
 interface FAQItem {
   id: string;
-  preguntaES: string;
-  preguntaEN: string;
-  respuestaES: string;
-  respuestaEN: string;
+  question: Bilingual;
+  answer: Bilingual;
   status: "published" | "draft";
-  orden: number;
+  order: number;
 }
 interface FAQCategory {
   id: string;
-  nombre: string;
+  name: string;
   icon: string;
   items: FAQItem[];
 }
 
 const mockFAQ: FAQCategory[] = [
   {
-    id: "C-1", nombre: "Reservas y pagos", icon: "💳",
+    id: "C-1", name: "Reservas y pagos", icon: "💳",
     items: [
-      { id: "F-001", preguntaES: "¿Cómo puedo reservar un tour?", preguntaEN: "How can I book a tour?", respuestaES: "Puedes reservar directamente en nuestra web, por WhatsApp o enviando un formulario de cotización. Aceptamos tarjeta de crédito, PayPal y transferencia bancaria.", respuestaEN: "You can book directly on our website, via WhatsApp or by submitting a quote form. We accept credit cards, PayPal and bank transfer.", status: "published", orden: 1 },
-      { id: "F-002", preguntaES: "¿Qué depósito se requiere?", preguntaEN: "What deposit is required?", respuestaES: "Para confirmar la reserva se requiere un depósito del 25% del total. El saldo restante se paga 48h antes del tour.", respuestaEN: "A 25% deposit of the total is required to confirm the reservation. The remaining balance is paid 48h before the tour.", status: "published", orden: 2 },
-      { id: "F-003", preguntaES: "¿Cuál es su política de cancelación?", preguntaEN: "What is your cancellation policy?", respuestaES: "Cancelaciones con más de 72h de antelación: reembolso completo. Entre 48-72h: 50%. Menos de 48h: sin reembolso.", respuestaEN: "Cancellations more than 72h in advance: full refund. Between 48-72h: 50%. Less than 48h: no refund.", status: "published", orden: 3 },
+      { id: "F-001", question: { es: "¿Cómo puedo reservar un tour?", en: "How can I book a tour?" }, answer: { es: "Puedes reservar directamente en nuestra web, por WhatsApp o enviando un formulario de cotización. Aceptamos tarjeta de crédito, PayPal y transferencia bancaria.", en: "You can book directly on our website, via WhatsApp or by submitting a quote form. We accept credit cards, PayPal and bank transfer." }, status: "published", order: 1 },
+      { id: "F-002", question: { es: "¿Qué depósito se requiere?", en: "What deposit is required?" }, answer: { es: "Para confirmar la reserva se requiere un depósito del 25% del total. El saldo restante se paga 48h antes del tour.", en: "A 25% deposit of the total is required to confirm the reservation. The remaining balance is paid 48h before the tour." }, status: "published", order: 2 },
+      { id: "F-003", question: { es: "¿Cuál es su política de cancelación?", en: "What is your cancellation policy?" }, answer: { es: "Cancelaciones con más de 72h de antelación: reembolso completo. Entre 48-72h: 50%. Menos de 48h: sin reembolso.", en: "Cancellations more than 72h in advance: full refund. Between 48-72h: 50%. Less than 48h: no refund." }, status: "published", order: 3 },
     ],
   },
   {
-    id: "C-2", nombre: "Sobre los tours", icon: "🎒",
+    id: "C-2", name: "Sobre los tours", icon: "🎒",
     items: [
-      { id: "F-004", preguntaES: "¿Qué debo llevar al tour?", preguntaEN: "What should I bring to the tour?", respuestaES: "Ropa cómoda, protector solar biodegradable, traje de baño, toalla, identificación y efectivo para propinas y souvenirs.", respuestaEN: "Comfortable clothing, biodegradable sunscreen, swimsuit, towel, ID and cash for tips and souvenirs.", status: "published", orden: 1 },
-      { id: "F-005", preguntaES: "¿Los guías hablan inglés?", preguntaEN: "Do the guides speak English?", respuestaES: "Sí, todos nuestros guías son bilingües (español/inglés). Consulta disponibilidad de guías en francés, alemán y portugués.", respuestaEN: "Yes, all our guides are bilingual (Spanish/English). Check availability of guides in French, German and Portuguese.", status: "published", orden: 2 },
-      { id: "F-006", preguntaES: "¿Los tours incluyen traslado?", preguntaEN: "Do tours include transfer?", respuestaES: "La mayoría de nuestros tours incluyen pickup y dropoff en hoteles del área. Consulta el detalle de cada tour para confirmarlo.", respuestaEN: "Most of our tours include pickup and dropoff at hotels in the area. Check each tour's details to confirm.", status: "draft", orden: 3 },
+      { id: "F-004", question: { es: "¿Qué debo llevar al tour?", en: "What should I bring to the tour?" }, answer: { es: "Ropa cómoda, protector solar biodegradable, traje de baño, toalla, identificación y efectivo para propinas y souvenirs.", en: "Comfortable clothing, biodegradable sunscreen, swimsuit, towel, ID and cash for tips and souvenirs." }, status: "published", order: 1 },
+      { id: "F-005", question: { es: "¿Los guías hablan inglés?", en: "Do the guides speak English?" }, answer: { es: "Sí, todos nuestros guías son bilingües (español/inglés). Consulta disponibilidad de guías en francés, alemán y portugués.", en: "Yes, all our guides are bilingual (Spanish/English). Check availability of guides in French, German and Portuguese." }, status: "published", order: 2 },
+      { id: "F-006", question: { es: "¿Los tours incluyen traslado?", en: "Do tours include transfer?" }, answer: { es: "La mayoría de nuestros tours incluyen pickup y dropoff en hoteles del área. Consulta el detalle de cada tour para confirmarlo.", en: "Most of our tours include pickup and dropoff at hotels in the area. Check each tour's details to confirm." }, status: "draft", order: 3 },
     ],
   },
   {
-    id: "C-3", nombre: "Grupos y empresas", icon: "👥",
+    id: "C-3", name: "Grupos y empresas", icon: "👥",
     items: [
-      { id: "F-007", preguntaES: "¿Hacen tours privados para grupos?", preguntaEN: "Do you offer private group tours?", respuestaES: "Sí, organizamos tours privados para grupos desde 2 hasta 50 personas. Solicita una cotización personalizada.", respuestaEN: "Yes, we organize private tours for groups from 2 to 50 people. Request a personalized quote.", status: "published", orden: 1 },
+      { id: "F-007", question: { es: "¿Hacen tours privados para grupos?", en: "Do you offer private group tours?" }, answer: { es: "Sí, organizamos tours privados para grupos desde 2 hasta 50 personas. Solicita una cotización personalizada.", en: "Yes, we organize private tours for groups from 2 to 50 people. Request a personalized quote." }, status: "published", order: 1 },
     ],
   },
 ];
@@ -49,14 +48,12 @@ const mockFAQ: FAQCategory[] = [
 /* ── Inline editor (drawer) ─────────────────────────────── */
 function FAQEditor({ item, onSave, onClose }: { item: FAQItem | null; onSave: (i: FAQItem) => void; onClose: () => void }) {
   const isNew = !item;
-  const [pregES, setPregES] = useState(item?.preguntaES || "");
-  const [pregEN, setPregEN] = useState(item?.preguntaEN || "");
-  const [respES, setRespES] = useState(item?.respuestaES || "");
-  const [respEN, setRespEN] = useState(item?.respuestaEN || "");
-  const [status, setStatus] = useState<"published" | "draft">(item?.status || "draft");
+  const [question, setQuestion] = useState<Bilingual>(item?.question ?? { es: "", en: "" });
+  const [answer, setAnswer]     = useState<Bilingual>(item?.answer   ?? { es: "", en: "" });
+  const [status, setStatus]     = useState<"published" | "draft">(item?.status ?? "draft");
 
   const save = () => {
-    onSave({ id: item?.id || `F-${Date.now()}`, preguntaES: pregES, preguntaEN: pregEN, respuestaES: respES, respuestaEN: respEN, status, orden: item?.orden || 99 });
+    onSave({ id: item?.id || `F-${Date.now()}`, question, answer, status, order: item?.order ?? 99 });
     onClose();
   };
 
@@ -72,10 +69,10 @@ function FAQEditor({ item, onSave, onClose }: { item: FAQItem | null; onSave: (i
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: 16 }}>
           <FormField label="Pregunta" required>
-            <BilingualField valueES={pregES} valueEN={pregEN} onChangeES={setPregES} onChangeEN={setPregEN} placeholder="¿Cómo puedo...?" />
+            <BilingualField value={question} onChange={setQuestion} placeholder="¿Cómo puedo...?" />
           </FormField>
           <FormField label="Respuesta" required>
-            <BilingualField valueES={respES} valueEN={respEN} onChangeES={setRespES} onChangeEN={setRespEN} multiline rows={6} placeholder="La respuesta detallada..." />
+            <BilingualField value={answer} onChange={setAnswer} multiline rows={6} placeholder="La respuesta detallada..." />
           </FormField>
           <FormField label="Estado">
             <div style={{ display: "flex", gap: 8 }}>
@@ -160,7 +157,7 @@ export function FAQ() {
             >
               {isOpen ? <ChevronDown size={16} color="#94A3B8" /> : <ChevronRight size={16} color="#94A3B8" />}
               <span style={{ fontSize: 18 }}>{cat.icon}</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", flex: 1 }}>{cat.nombre}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", flex: 1 }}>{cat.name}</span>
               <span style={{ fontSize: 12, color: "#94A3B8", background: "#F1F5F9", padding: "2px 8px", borderRadius: 20 }}>
                 {cat.items.length} preguntas
               </span>
@@ -188,10 +185,10 @@ export function FAQ() {
                           <GripVertical size={14} color="#CBD5E1" style={{ cursor: "grab" }} />
                         </td>
                         <td style={{ padding: "11px 14px", fontSize: 13, color: "#0F172A", maxWidth: 260 }}>
-                          <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.preguntaES}</div>
+                          <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.question.es}</div>
                         </td>
                         <td style={{ padding: "11px 14px", fontSize: 12, color: "#94A3B8", maxWidth: 200 }}>
-                          <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.preguntaEN}</div>
+                          <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.question.en}</div>
                         </td>
                         <td style={{ padding: "11px 14px" }}>
                           <StatusBadge variant={item.status === "published" ? "success" : "neutral"} label={item.status === "published" ? "Publicado" : "Borrador"} />

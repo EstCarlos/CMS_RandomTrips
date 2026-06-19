@@ -6,7 +6,7 @@ import { FormField, Input, Textarea, SelectField, BilingualField } from "../ui/F
 import { Btn } from "../ui/Modal";
 import { DESTINATIONS } from "../../data/realData";
 
-type Destino = typeof DESTINATIONS[0];
+type Destino = Omit<typeof DESTINATIONS[0], "status"> & { status: "published" | "draft" | "archived" };
 
 const statusConf: Record<string, { variant: "success" | "neutral" | "warning"; label: string }> = {
   published: { variant: "success", label: "Publicado" },
@@ -18,8 +18,8 @@ const statusConf: Record<string, { variant: "success" | "neutral" | "warning"; l
 function DestinoEditor({ destino, onBack }: { destino: Destino | null; onBack: () => void }) {
   const isNew = !destino;
   const [d, setD] = useState<Destino>(destino ?? {
-    id: "new", nombre_es: "", nombre_en: "", slug: "", descripcion_es: "", descripcion_en: "",
-    lat: "", lng: "", numExperiencias: 0, numTours: 0, status: "draft" as const, emoji: "📍", color: "#F1F5F9",
+    id: "new", name: { es: "", en: "" }, slug: "", description: { es: "", en: "" },
+    lat: "", lng: "", experienceCount: 0, tourCount: 0, status: "draft" as const, emoji: "📍", color: "#F1F5F9",
   });
 
   return (
@@ -30,11 +30,11 @@ function DestinoEditor({ destino, onBack }: { destino: Destino | null; onBack: (
             <ArrowLeft size={12} /> Destinos
           </button>
           <span>/</span>
-          <span style={{ color: "#0F172A" }}>{isNew ? "Nuevo destino" : d.nombre_es}</span>
+          <span style={{ color: "#0F172A" }}>{isNew ? "Nuevo destino" : d.name.es}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0F172A", margin: 0, flex: 1 }}>
-            {isNew ? "Nuevo destino" : d.nombre_es}
+            {isNew ? "Nuevo destino" : d.name.es}
           </h1>
           <StatusBadge variant={statusConf[d.status].variant} label={statusConf[d.status].label} />
           <div style={{ display: "flex", gap: 8 }}>
@@ -46,10 +46,10 @@ function DestinoEditor({ destino, onBack }: { destino: Destino | null; onBack: (
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <FormField label="Nombre del destino" required>
-          <BilingualField valueES={d.nombre_es} valueEN={d.nombre_en} onChangeES={v => setD(p => ({...p, nombre_es: v}))} onChangeEN={v => setD(p => ({...p, nombre_en: v}))} placeholder="Nombre del destino..." />
+          <BilingualField value={d.name} onChange={v => setD(p => ({...p, name: v}))} placeholder="Nombre del destino..." />
         </FormField>
         <FormField label="Descripción">
-          <BilingualField valueES={d.descripcion_es} valueEN={d.descripcion_en} onChangeES={v => setD(p => ({...p, descripcion_es: v}))} onChangeEN={v => setD(p => ({...p, descripcion_en: v}))} multiline rows={4} placeholder="Descripción del destino para la web..." />
+          <BilingualField value={d.description} onChange={v => setD(p => ({...p, description: v}))} multiline rows={4} placeholder="Descripción del destino para la web..." />
         </FormField>
         <FormField label="Slug (URL)">
           <Input value={d.slug} onChange={v => setD(p => ({...p, slug: v}))} placeholder="santiago" />
@@ -105,7 +105,7 @@ export function Destinos() {
 
   const filtered = DESTINATIONS.filter(d => {
     const q = search.toLowerCase();
-    return (!q || d.nombre_es.toLowerCase().includes(q) || d.slug.toLowerCase().includes(q))
+    return (!q || d.name.es.toLowerCase().includes(q) || d.slug.toLowerCase().includes(q))
       && (!filters.status || d.status === filters.status);
   });
 
@@ -156,15 +156,15 @@ export function Destinos() {
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 36, height: 36, borderRadius: 6, background: d.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{d.emoji}</div>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{d.nombre_es}</div>
-                        <div style={{ fontSize: 11, color: "#94A3B8" }}>{d.nombre_en}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>{d.name.es}</div>
+                        <div style={{ fontSize: 11, color: "#94A3B8" }}>{d.name.en}</div>
                       </div>
                     </div>
                   </td>
                   <td style={{ padding: "12px 16px", fontSize: 12, color: "#94A3B8", fontFamily: "monospace" }}>{d.slug}</td>
                   <td style={{ padding: "12px 16px", fontSize: 12, color: "#475569" }}>{d.lat}°, {d.lng}°</td>
-                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, fontSize: 14 }}>{d.numExperiencias}</td>
-                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, fontSize: 14 }}>{d.numTours}</td>
+                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, fontSize: 14 }}>{d.experienceCount}</td>
+                  <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, fontSize: 14 }}>{d.tourCount}</td>
                   <td style={{ padding: "12px 16px" }}>
                     <StatusBadge variant={statusConf[d.status].variant} label={statusConf[d.status].label} />
                   </td>

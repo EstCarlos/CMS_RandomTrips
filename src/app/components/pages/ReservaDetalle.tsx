@@ -10,21 +10,21 @@ import { Btn } from "../ui/Modal";
 /* ── Mock ───────────────────────────────────────────────── */
 interface Reserva {
   id: string;
-  cliente: string;
+  customerName: string;
   email: string;
-  telefono: string;
-  pais: string;
+  phone: string;
+  country: string;
   tour: string;
-  destino: string;
-  fechaTour: string;
-  fechaCreacion: string;
+  destination: string;
+  tourDate: string;
+  creationDate: string;
   pax: number;
   total: number;
-  pagado: number;
+  paid: number;
   status: string;
-  operador: string;
-  notas: string;
-  customizacion?: string;
+  operator: string;
+  notes: string;
+  customization?: string;
 }
 
 const statusConf: Record<string, { variant: "success" | "warning" | "danger" | "neutral" | "info"; label: string }> = {
@@ -38,23 +38,23 @@ const statusConf: Record<string, { variant: "success" | "warning" | "danger" | "
 interface Props { reserva: Reserva; onBack: () => void; }
 
 export function ReservaDetalle({ reserva: r, onBack }: Props) {
-  const [nota, setNota] = useState(r.notas || "Confirmar traslado 72h antes con Caribe Tours. Cliente solicita silla de bebé para el bote.");
+  const [nota, setNota] = useState(r.notes || "Confirmar traslado 72h antes con Caribe Tours. Cliente solicita silla de bebé para el bote.");
   const [notaLog] = useState([
-    { fecha: "12 Jun 2026 09:14", autor: "Alejandra Torres", texto: "Reserva creada desde web pública." },
-    { fecha: "12 Jun 2026 11:32", autor: "Alejandra Torres", texto: "Depósito 25% recibido por Stripe." },
-    { fecha: "14 Jun 2026 15:10", autor: "Carlos (Operador)", texto: "Confirmada disponibilidad para esa fecha." },
+    { date: "12 Jun 2026 09:14", author: "Alejandra Torres", text: "Reserva creada desde web pública." },
+    { date: "12 Jun 2026 11:32", author: "Alejandra Torres", text: "Depósito 25% recibido por Stripe." },
+    { date: "14 Jun 2026 15:10", author: "Carlos (Operador)", text: "Confirmada disponibilidad para esa fecha." },
   ]);
   const [emailLog] = useState([
-    { fecha: "12 Jun 2026 09:15", tipo: "Confirmación de reserva",      estado: "entregado" },
-    { fecha: "12 Jun 2026 11:33", tipo: "Confirmación de depósito",      estado: "entregado" },
-    { fecha: "15 Jun 2026 08:00", tipo: "Recordatorio de saldo (auto)",  estado: "pendiente" },
+    { date: "12 Jun 2026 09:15", type: "Confirmación de reserva",      status: "entregado" },
+    { date: "12 Jun 2026 11:33", type: "Confirmación de depósito",      status: "entregado" },
+    { date: "15 Jun 2026 08:00", type: "Recordatorio de saldo (auto)",  status: "pendiente" },
   ]);
   const [payLinks] = useState([
-    { id: "LNK-441", monto: "RD$ 53,100", estado: "pendiente", creado: "12 Jun 2026", expira: "19 Jun 2026" },
+    { id: "LNK-441", amount: "RD$ 53,100", status: "pendiente", createdAt: "12 Jun 2026", expiresAt: "19 Jun 2026" },
   ]);
 
-  const saldo = r.total - r.pagado;
-  const pctPagado = (r.pagado / r.total) * 100;
+  const saldo = r.total - r.paid;
+  const pctPagado = (r.paid / r.total) * 100;
 
   return (
     <div style={{ fontFamily: "Inter, sans-serif", display: "flex", flexDirection: "column", gap: 0 }}>
@@ -66,7 +66,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div>
             <span style={{ fontSize: 24, fontWeight: 800, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{r.id}</span>
-            <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>Creada el {r.fechaCreacion}</span>
+            <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>Creada el {r.creationDate}</span>
           </div>
           <StatusBadge variant={statusConf[r.status].variant} label={statusConf[r.status].label} />
           <div style={{ display: "flex", gap: 8, marginLeft: "auto", flexWrap: "wrap" }}>
@@ -94,10 +94,10 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
             <div style={{ padding: "14px 16px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 {[
-                  { label: "Nombre",    value: r.cliente },
-                  { label: "Email",     value: r.email   },
-                  { label: "Teléfono", value: r.telefono },
-                  { label: "País",      value: r.pais    },
+                  { label: "Nombre",    value: r.customerName },
+                  { label: "Email",     value: r.email        },
+                  { label: "Teléfono", value: r.phone        },
+                  { label: "País",      value: r.country      },
                 ].map(f => (
                   <div key={f.label}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{f.label}</div>
@@ -124,18 +124,18 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                 </div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{r.tour}</div>
-                  <div style={{ fontSize: 12, color: "#475569" }}>{r.destino}</div>
+                  <div style={{ fontSize: 12, color: "#475569" }}>{r.destination}</div>
                   <div style={{ display: "flex", gap: 12, marginTop: 6, fontSize: 12, color: "#94A3B8" }}>
-                    <span>📅 {r.fechaTour}</span>
+                    <span>📅 {r.tourDate}</span>
                     <span>👥 {r.pax} pax</span>
-                    <span>🏢 {r.operador}</span>
+                    <span>🏢 {r.operator}</span>
                   </div>
                 </div>
               </div>
-              {r.customizacion && (
+              {r.customization && (
                 <div style={{ marginTop: 12, padding: "10px 12px", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: 6 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: "#7C3AED", marginBottom: 4 }}>Personalización elegida</div>
-                  <div style={{ fontSize: 12, color: "#475569" }}>{r.customizacion}</div>
+                  <div style={{ fontSize: 12, color: "#475569" }}>{r.customization}</div>
                 </div>
               )}
             </div>
@@ -156,7 +156,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                     <Check size={14} color="#FFFFFF" />
                   </div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: "#16A34A", textAlign: "center" }}>Depósito</div>
-                  <div style={{ fontSize: 10, color: "#94A3B8" }}>RD$ {(r.pagado).toLocaleString()}</div>
+                  <div style={{ fontSize: 10, color: "#94A3B8" }}>RD$ {(r.paid).toLocaleString()}</div>
                   <div style={{ fontSize: 10, color: "#94A3B8" }}>12 Jun</div>
                 </div>
                 {/* Connector */}
@@ -190,7 +190,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
               {/* Progress bar */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#475569", marginBottom: 4 }}>
-                  <span>Pagado: RD$ {r.pagado.toLocaleString()}</span>
+                  <span>Pagado: RD$ {r.paid.toLocaleString()}</span>
                   <span>Total: RD$ {r.total.toLocaleString()}</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: "#F1F5F9", overflow: "hidden" }}>
@@ -214,7 +214,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                       <td style={{ padding: "8px 10px", color: "#475569" }}>12 Jun 2026</td>
                       <td style={{ padding: "8px 10px", color: "#0F172A" }}>Depósito 25%</td>
                       <td style={{ padding: "8px 10px", color: "#475569" }}>Stripe · Visa ••4242</td>
-                      <td style={{ padding: "8px 10px", fontWeight: 700, color: "#16A34A" }}>RD$ {r.pagado.toLocaleString()}</td>
+                      <td style={{ padding: "8px 10px", fontWeight: 700, color: "#16A34A" }}>RD$ {r.paid.toLocaleString()}</td>
                       <td style={{ padding: "8px 10px" }}><StatusBadge variant="success" label="Confirmado" /></td>
                     </tr>
                   </tbody>
@@ -228,8 +228,8 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                   <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 6, fontSize: 12 }}>
                     <Link size={12} color="#92400E" />
                     <span style={{ fontWeight: 600, color: "#92400E" }}>{l.id}</span>
-                    <span style={{ color: "#475569" }}>{l.monto}</span>
-                    <span style={{ color: "#94A3B8" }}>Expira {l.expira}</span>
+                    <span style={{ color: "#475569" }}>{l.amount}</span>
+                    <span style={{ color: "#94A3B8" }}>Expira {l.expiresAt}</span>
                     <StatusBadge variant="warning" label="Pendiente" />
                     <button style={{ marginLeft: "auto", fontSize: 11, color: "#006CFE", border: "none", background: "transparent", cursor: "pointer" }}>Copiar link</button>
                   </div>
@@ -254,17 +254,17 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                 <div key={i} style={{ display: "flex", gap: 10, paddingBottom: 12, borderBottom: i < emailLog.length - 1 ? "1px solid #F1F5F9" : "none", marginBottom: i < emailLog.length - 1 ? 12 : 0 }}>
                   <div style={{
                     width: 28, height: 28, borderRadius: "50%",
-                    background: e.estado === "entregado" ? "#F0FDF4" : "#FFFBEB",
+                    background: e.status === "entregado" ? "#F0FDF4" : "#FFFBEB",
                     display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                   }}>
-                    <Mail size={12} color={e.estado === "entregado" ? "#16A34A" : "#F59E0B"} />
+                    <Mail size={12} color={e.status === "entregado" ? "#16A34A" : "#F59E0B"} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: "#0F172A" }}>{e.tipo}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: "#0F172A" }}>{e.type}</div>
                     <div style={{ fontSize: 11, color: "#94A3B8", display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                      <Clock size={10} /> {e.fecha}
-                      <span style={{ color: e.estado === "entregado" ? "#16A34A" : "#F59E0B", fontWeight: 600 }}>
-                        · {e.estado === "entregado" ? "✓ Entregado" : "⏱ Pendiente"}
+                      <Clock size={10} /> {e.date}
+                      <span style={{ color: e.status === "entregado" ? "#16A34A" : "#F59E0B", fontWeight: 600 }}>
+                        · {e.status === "entregado" ? "✓ Entregado" : "⏱ Pendiente"}
                       </span>
                     </div>
                   </div>
@@ -283,7 +283,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
                 { label: "Total",   val: `RD$ ${r.total.toLocaleString()}`,   bold: true  },
-                { label: "Pagado",  val: `RD$ ${r.pagado.toLocaleString()}`,  color: "#16A34A" },
+                { label: "Pagado",  val: `RD$ ${r.paid.toLocaleString()}`,  color: "#16A34A" },
                 { label: "Saldo",   val: `RD$ ${saldo.toLocaleString()}`,     color: saldo > 0 ? "#F13540" : "#475569" },
               ].map(row => (
                 <div key={row.label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
@@ -324,8 +324,8 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
               <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Log de cambios</div>
               {notaLog.map((entry, i) => (
                 <div key={i} style={{ fontSize: 11, color: "#475569", marginBottom: 5, paddingLeft: 8, borderLeft: "2px solid #E5E7EB" }}>
-                  <span style={{ color: "#94A3B8" }}>{entry.fecha}</span> — <strong>{entry.autor}</strong>
-                  <div style={{ color: "#475569" }}>{entry.texto}</div>
+                  <span style={{ color: "#94A3B8" }}>{entry.date}</span> — <strong>{entry.author}</strong>
+                  <div style={{ color: "#475569" }}>{entry.text}</div>
                 </div>
               ))}
             </div>
@@ -339,7 +339,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                 <span style={{ fontSize: 16 }}>🤝</span>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{r.operador}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{r.operator}</div>
                 <div style={{ fontSize: 11, color: "#94A3B8" }}>Contactar antes del tour</div>
               </div>
             </div>

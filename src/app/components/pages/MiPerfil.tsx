@@ -4,11 +4,11 @@ import { FormField, Input } from "../ui/FormField";
 
 export function MiPerfil() {
   const [form, setForm] = useState({
-    nombre: "Carlos Domínguez", email: "carlos@caribetours.com",
+    name: "Carlos Domínguez", email: "carlos@caribetours.com",
     telefono: "+1 809 555 1000", whatsapp: "+1 809 555 1001",
-    empresa: "Caribe Tours", zona: "La Romana / Bayahibe",
+    company: "Caribe Tours", zone: "La Romana / Bayahibe",
   });
-  const [pass, setPass]       = useState({ actual: "", nueva: "", confirmar: "" });
+  const [pass, setPass]       = useState({ current: "", newPassword: "", confirm: "" });
   const [showPass, setShowPass] = useState(false);
   const [saved, setSaved]      = useState(false);
 
@@ -23,19 +23,19 @@ export function MiPerfil() {
             CD
           </div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{form.nombre}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{form.name}</div>
             <div style={{ fontSize: 12, color: "#94A3B8" }}>Operador externo · Caribe Tours</div>
           </div>
         </div>
 
-        <FormField label="Nombre completo"><Input value={form.nombre} onChange={v => setForm(p => ({...p, nombre: v}))} /></FormField>
+        <FormField label="Nombre completo"><Input value={form.name} onChange={v => setForm(p => ({...p, name: v}))} /></FormField>
         <FormField label="Email" helper="No editable — contacta a Random Trips para cambiarlo">
           <Input value={form.email} disabled />
         </FormField>
         <FormField label="Teléfono"><Input value={form.telefono} onChange={v => setForm(p => ({...p, telefono: v}))} /></FormField>
         <FormField label="WhatsApp"><Input value={form.whatsapp} onChange={v => setForm(p => ({...p, whatsapp: v}))} /></FormField>
-        <FormField label="Empresa"><Input value={form.empresa} disabled /></FormField>
-        <FormField label="Zona de operación"><Input value={form.zona} disabled /></FormField>
+        <FormField label="Empresa"><Input value={form.company} disabled /></FormField>
+        <FormField label="Zona de operación"><Input value={form.zone} disabled /></FormField>
 
         <button onClick={handleSave} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 6, border: "none", background: "#006CFE", color: "#FFFFFF", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
           {saved ? "✓ Guardado" : <><Save size={13} /> Guardar cambios</>}
@@ -47,9 +47,9 @@ export function MiPerfil() {
         <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>Cambiar contraseña</div>
 
         {[
-          { label: "Contraseña actual", key: "actual" },
-          { label: "Nueva contraseña",  key: "nueva"  },
-          { label: "Confirmar nueva",   key: "confirmar" },
+          { label: "Contraseña actual", key: "current" },
+          { label: "Nueva contraseña",  key: "newPassword" },
+          { label: "Confirmar nueva",   key: "confirm" },
         ].map(f => (
           <FormField key={f.key} label={f.label}>
             <div style={{ position: "relative" }}>
@@ -64,13 +64,13 @@ export function MiPerfil() {
           </FormField>
         ))}
 
-        {pass.nueva && pass.confirmar && pass.nueva !== pass.confirmar && (
+        {pass.newPassword && pass.confirm && pass.newPassword !== pass.confirm && (
           <div style={{ fontSize: 12, color: "#F13540" }}>Las contraseñas no coinciden</div>
         )}
 
         <button
-          disabled={!pass.actual || !pass.nueva || pass.nueva !== pass.confirmar}
-          style={{ padding: "9px 16px", borderRadius: 6, border: "none", background: (pass.actual && pass.nueva && pass.nueva === pass.confirmar) ? "#006CFE" : "#E5E7EB", color: (pass.actual && pass.nueva && pass.nueva === pass.confirmar) ? "#FFFFFF" : "#94A3B8", fontSize: 13, fontWeight: 600, cursor: (pass.actual && pass.nueva && pass.nueva === pass.confirmar) ? "pointer" : "not-allowed" }}>
+          disabled={!pass.current || !pass.newPassword || pass.newPassword !== pass.confirm}
+          style={{ padding: "9px 16px", borderRadius: 6, border: "none", background: (pass.current && pass.newPassword && pass.newPassword === pass.confirm) ? "#006CFE" : "#E5E7EB", color: (pass.current && pass.newPassword && pass.newPassword === pass.confirm) ? "#FFFFFF" : "#94A3B8", fontSize: 13, fontWeight: 600, cursor: (pass.current && pass.newPassword && pass.newPassword === pass.confirm) ? "pointer" : "not-allowed" }}>
           Actualizar contraseña
         </button>
 

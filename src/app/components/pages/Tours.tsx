@@ -2,21 +2,20 @@ import { useState } from "react";
 import { Plus, Edit2, Copy, Archive, Image, ChevronDown } from "lucide-react";
 import { FilterBar } from "../ui/FilterBar";
 import { StatusBadge } from "../ui/StatusBadge";
-import { TOURS_DATA, formatDOP } from "../../data/realData";
+import { TOURS_DATA, findDestination, getTourPriceDisplay } from "../../data/realData";
 
 type TourRow = typeof TOURS_DATA[0];
 
 const statusConfig: Record<string, { variant: "success" | "neutral" | "warning" | "info"; label: string }> = {
-  publicado: { variant: "success", label: "Publicado" },
+  published: { variant: "success", label: "Publicado" },
   draft:     { variant: "neutral", label: "Borrador"  },
-  archivado: { variant: "warning", label: "Archivado" },
-  pausado:   { variant: "info",    label: "Pausado"   },
+  archived:  { variant: "warning", label: "Archivado" },
 };
 
 const tipoConfig: Record<string, { label: string; color: string; bg: string }> = {
-  fijo:      { label: "🎯 Fijo",      color: "#1D4ED8", bg: "#EFF6FF" },
-  multi_dia: { label: "🗓️ Multi-día", color: "#7C3AED", bg: "#F5F3FF" },
-  privado:   { label: "📩 Privado",   color: "#92400E", bg: "#FFFBEB" },
+  singleDay:      { label: "🎯 Fijo",      color: "#1D4ED8", bg: "#EFF6FF" },
+  multiDay:       { label: "🗓️ Multi-día", color: "#7C3AED", bg: "#F5F3FF" },
+  privateRequest: { label: "📩 Privado",   color: "#92400E", bg: "#FFFBEB" },
 };
 
 export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
@@ -27,9 +26,10 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
 
   const filtered = TOURS_DATA.filter(t => {
     const q = search.toLowerCase();
-    const mSearch = !q || t.titulo_es.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.destinos_nombres.join(" ").toLowerCase().includes(q);
-    const mTipo   = !filters.tipo   || t.tipo   === filters.tipo;
-    const mStatus = !filters.status || t.estado === filters.status;
+    const destNames = t.destinationIds.map(id => findDestination(id)?.name.es ?? id).join(" ");
+    const mSearch = !q || t.title.es.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || destNames.toLowerCase().includes(q);
+    const mTipo   = !filters.type   || t.type   === filters.type;
+    const mStatus = !filters.status || t.status === filters.status;
     return mSearch && mTipo && mStatus;
   });
 
@@ -45,8 +45,8 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <FilterBar
           filters={[
-            { key: "tipo", label: "Tipo", type: "select", options: [
-              { value: "fijo", label: "🎯 Fijo" }, { value: "multi_dia", label: "🗓️ Multi-día" }, { value: "privado", label: "📩 Privado" },
+            { key: "type", label: "Tipo", type: "select", options: [
+              { value: "singleDay", label: "🎯 Fijo" }, { value: "multiDay", label: "🗓️ Multi-día" }, { value: "privateRequest", label: "📩 Privado" },
             ]},
             { key: "status", label: "Estado", type: "select", options:
               Object.entries(statusConfig).map(([v, s]) => ({ value: v, label: s.label }))
@@ -99,8 +99,8 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
                 </td></tr>
               ) : filtered.map((t, i) => {
                 const isSel = selected.has(t.id);
-                const tipo = tipoConfig[t.tipo];
-                const st   = statusConfig[t.estado];
+                const tipo = tipoConfig[t.type];
+                const st   = statusConfig[t.status];
                 return (
                   <tr key={t.id}
                     style={{ borderBottom: i < filtered.length - 1 ? "1px solid #F1F5F9" : "none", background: isSel ? "#F0F7FF" : "#FFFFFF", transition: "background 0.08s", cursor: "pointer" }}
@@ -119,7 +119,7 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
                     </td>
                     {/* Nombre */}
                     <td style={{ padding: "12px 14px", maxWidth: 240 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.titulo_es}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.title.es}</div>
                       <div style={{ fontSize: 11, color: "#94A3B8" }}>{t.id}</div>
                     </td>
                     {/* Tipo */}
@@ -128,24 +128,25 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
                     </td>
                     {/* Precio */}
                     <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                      {t.pricing}
+                      {getTourPriceDisplay(t)}
                     </td>
                     {/* Destinos */}
                     <td style={{ padding: "12px 14px" }}>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                        {t.destinos_nombres.map(d => (
-                          <span key={d} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 20, background: "#F1F5F9", color: "#475569" }}>{d}</span>
-                        ))}
+                        {t.destinationIds.map(id => {
+                          const name = findDestination(id)?.name.es ?? id;
+                          return <span key={id} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 20, background: "#F1F5F9", color: "#475569" }}>{name}</span>;
+                        })}
                       </div>
                     </td>
                     {/* Capacidad */}
                     <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569", textAlign: "center" }}>
-                      {t.capacidad_max} pax
+                      {t.maxCapacity} pax
                     </td>
                     {/* Reservas activas */}
                     <td style={{ padding: "12px 14px", textAlign: "center" }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: "50%", background: "#EFF6FF", color: "#006CFE", fontSize: 12, fontWeight: 700 }}>
-                        {t.reservasActivas}
+                        {t.activeBookings}
                       </span>
                     </td>
                     {/* Estado */}
@@ -153,7 +154,7 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
                       <StatusBadge variant={st.variant} label={st.label} />
                     </td>
                     {/* Última actualización */}
-                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8", whiteSpace: "nowrap" }}>{t.ultimaActualizacion}</td>
+                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8", whiteSpace: "nowrap" }}>{t.lastUpdated}</td>
                     {/* Actions */}
                     <td style={{ padding: "12px 16px" }} onClick={e => e.stopPropagation()}>
                       <div style={{ display: "flex", gap: 4 }}>

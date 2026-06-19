@@ -17,8 +17,8 @@ const TABS: { id: ConfigTab; label: string; icon: string }[] = [
 
 /* ── Tasas de cambio ──────────────────────────────────── */
 // Real exchange rates from SiteConfig (USD/EUR stored as DOP multiplier inverse)
-const usdDOP = (1 / SITE_CONFIG.tasas_cambio.USD).toFixed(2); // ≈ 59.88
-const eurDOP = (1 / SITE_CONFIG.tasas_cambio.EUR).toFixed(2); // ≈ 64.52
+const usdDOP = (1 / SITE_CONFIG.exchangeRates.USD).toFixed(2); // ≈ 59.88
+const eurDOP = (1 / SITE_CONFIG.exchangeRates.EUR).toFixed(2); // ≈ 64.52
 
 const rateHistory = [
   { fecha: "16 Jun 2026 09:00", usd: usdDOP, eur: eurDOP, actor: "Alejandra Torres" },
@@ -122,11 +122,11 @@ function TasasCambio() {
 /* ── Contacto y redes ─────────────────────────────────── */
 function ContactoRedes() {
   const [data, setData] = useState({
-    direccion: SITE_CONFIG.punto_salida_default.direccion,
-    telefono: SITE_CONFIG.contacto.whatsapp,
-    whatsapp: SITE_CONFIG.contacto.whatsapp,
-    email: SITE_CONFIG.contacto.email,
-    instagram: SITE_CONFIG.redes.instagram.replace("@", ""),
+    direccion: SITE_CONFIG.defaultDeparturePoint.address,
+    telefono: SITE_CONFIG.contact.whatsapp,
+    whatsapp: SITE_CONFIG.contact.whatsapp,
+    email: SITE_CONFIG.contact.email,
+    instagram: (SITE_CONFIG.social.instagram ?? "").replace("@", ""),
     facebook: "randomtripsrd",
     tiktok: "randomtripsdo",
     youtube: "randomtrips",
@@ -175,9 +175,9 @@ function ContactoRedes() {
 
 /* ── Servicios catalog ────────────────────────────────── */
 const SERVICIOS_INIT = SERVICE_CATALOG.map(s => ({
-  id: s.id, cat: s.categoria, icon: s.icono,
-  nombreES: s.nombre_es, nombreEN: s.nombre_en,
-  orden: s.orden, activo: true,
+  id: s.id, cat: s.category, icon: s.icon,
+  nombreES: s.name.es, nombreEN: s.name.en,
+  orden: s.order, activo: true,
 }));
 
 function CatalogoServicios() {
@@ -276,19 +276,19 @@ function Categorias() {
 
 /* ── Email templates ──────────────────────────────────── */
 const EMAIL_TEMPLATES = [
-  { id: "E1", nombre: "Confirmación de reserva",     variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{fecha_tour}}", "{{id_reserva}}", "{{link_voucher}}"] },
-  { id: "E2", nombre: "Recordatorio de saldo (48h)", variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{fecha_tour}}", "{{saldo}}", "{{link_pago}}"] },
-  { id: "E3", nombre: "Recordatorio de saldo (7d)",  variables: ["{{cliente_nombre}}", "{{saldo}}", "{{link_pago}}"] },
-  { id: "E4", nombre: "Cotización enviada",           variables: ["{{cliente_nombre}}", "{{tour_propuesto}}", "{{precio}}", "{{validez_dias}}", "{{link_aceptar}}"] },
-  { id: "E5", nombre: "Recordatorio del tour (24h)", variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{punto_encuentro}}", "{{hora_salida}}"] },
-  { id: "E6", nombre: "Post-tour (reseña)",           variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{link_resena}}"] },
+  { id: "E1", name: "Confirmación de reserva",     variables: ["{{customerName}}", "{{tourName}}", "{{tourDate}}", "{{bookingId}}", "{{voucherLink}}"] },
+  { id: "E2", name: "Recordatorio de saldo (48h)", variables: ["{{customerName}}", "{{tourName}}", "{{tourDate}}", "{{outstandingBalance}}", "{{paymentLink}}"] },
+  { id: "E3", name: "Recordatorio de saldo (7d)",  variables: ["{{customerName}}", "{{outstandingBalance}}", "{{paymentLink}}"] },
+  { id: "E4", name: "Cotización enviada",           variables: ["{{customerName}}", "{{proposedTour}}", "{{price}}", "{{validityDays}}", "{{acceptLink}}"] },
+  { id: "E5", name: "Recordatorio del tour (24h)", variables: ["{{customerName}}", "{{tourName}}", "{{meetingPoint}}", "{{departureTime}}"] },
+  { id: "E6", name: "Post-tour (reseña)",           variables: ["{{customerName}}", "{{tourName}}", "{{reviewLink}}"] },
 ];
 
 function EmailTemplates() {
   const [activeTemplate, setActiveTemplate] = useState(EMAIL_TEMPLATES[0]);
   const [lang, setLang] = useState<"es" | "en">("es");
-  const [bodyES, setBodyES] = useState(`Hola {{cliente_nombre}},\n\nTu reserva para el tour <strong>{{tour_nombre}}</strong> ha sido confirmada para el {{fecha_tour}}.\n\nID de reserva: {{id_reserva}}\n\nDescarga tu voucher aquí: {{link_voucher}}\n\n¡Te esperamos!\nEquipo Random Trips`);
-  const [bodyEN, setBodyEN] = useState(`Hi {{cliente_nombre}},\n\nYour booking for the <strong>{{tour_nombre}}</strong> tour has been confirmed for {{fecha_tour}}.\n\nBooking ID: {{id_reserva}}\n\nDownload your voucher here: {{link_voucher}}\n\nSee you soon!\nRandom Trips Team`);
+  const [bodyES, setBodyES] = useState(`Hola {{customerName}},\n\nTu reserva para el tour <strong>{{tourName}}</strong> ha sido confirmada para el {{tourDate}}.\n\nID de reserva: {{bookingId}}\n\nDescarga tu voucher aquí: {{voucherLink}}\n\n¡Te esperamos!\nEquipo Random Trips`);
+  const [bodyEN, setBodyEN] = useState(`Hi {{customerName}},\n\nYour booking for the <strong>{{tourName}}</strong> tour has been confirmed for {{tourDate}}.\n\nBooking ID: {{bookingId}}\n\nDownload your voucher here: {{voucherLink}}\n\nSee you soon!\nRandom Trips Team`);
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 16 }}>
@@ -303,7 +303,7 @@ function EmailTemplates() {
             fontWeight: activeTemplate.id === t.id ? 600 : 400,
             color: activeTemplate.id === t.id ? "#006CFE" : "#475569",
           }}>
-            {t.nombre}
+            {t.name}
           </button>
         ))}
       </div>
@@ -311,7 +311,7 @@ function EmailTemplates() {
       {/* Editor */}
       <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{activeTemplate.nombre}</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{activeTemplate.name}</span>
           <div style={{ display: "flex", gap: 6 }}>
             {(["es", "en"] as const).map(l => (
               <button key={l} onClick={() => setLang(l)} style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${lang === l ? "#006CFE" : "#E5E7EB"}`, background: lang === l ? "#EFF6FF" : "#FFFFFF", color: lang === l ? "#006CFE" : "#475569", fontSize: 12, cursor: "pointer", fontWeight: lang === l ? 600 : 400 }}>

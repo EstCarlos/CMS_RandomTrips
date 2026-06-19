@@ -1,11 +1,12 @@
-import { ClipboardList, DollarSign, AlertCircle, CalendarDays, AlertTriangle, CheckCircle2, Clock, ChevronRight, XCircle } from "lucide-react";
+import { ClipboardList, DollarSign, CalendarDays, AlertTriangle, CheckCircle2, Clock, ChevronRight, XCircle } from "lucide-react";
+import type { Page } from "../layout/Sidebar";
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { KPICard } from "../ui/KPICard";
 import { StatusBadge } from "../ui/StatusBadge";
 import {
   TOURS_DATA, AVAILABILITY, BOOKINGS, CUSTOMERS, PAYMENTS,
   PAYMENT_LINKS, TOTAL_COBRADO, TOTAL_SALDO, BOOKINGS_ACTIVAS,
-  SALDOS_VENCIDOS, SALDOS_POR_VENCER, formatDOP,
+  SALDOS_VENCIDOS, SALDOS_POR_VENCER, formatDOP, getTourPriceDisplay,
 } from "../../data/realData";
 
 /* ── Derived lookups ────────────────────────────────────── */
@@ -32,27 +33,27 @@ const alerts: AlertItem[] = [];
 
 // Saldo vencido
 SALDOS_VENCIDOS.forEach(link => {
-  const bk   = BOOKINGS.find(b => b.id === link.booking_id)!;
-  const cust = custMap[bk.customer_id];
-  const tour = tourMap[bk.tour_id];
+  const bk   = BOOKINGS.find(b => b.id === link.bookingId)!;
+  const cust = custMap[bk.customerId];
+  const tour = tourMap[bk.tourId];
   alerts.push({
     type: "danger",
     icon: <XCircle size={14} />,
     title: `Saldo vencido — ${bk.id}`,
-    text:  `${cust.nombre} · ${tour.titulo_es} · ${formatDOP(link.monto)} · Link ${link.invoice_id} venció el ${link.expira}`,
+    text:  `${cust.name} · ${tour.title.es} · ${formatDOP(link.amount)} · Link ${link.invoiceId} venció el ${link.expiresAt}`,
   });
 });
 
 // Saldos pendientes con recordatorio enviado
 SALDOS_POR_VENCER.forEach(link => {
-  const bk   = BOOKINGS.find(b => b.id === link.booking_id)!;
-  const cust = custMap[bk.customer_id];
-  const tour = tourMap[bk.tour_id];
+  const bk   = BOOKINGS.find(b => b.id === link.bookingId)!;
+  const cust = custMap[bk.customerId];
+  const tour = tourMap[bk.tourId];
   alerts.push({
     type: "warning",
     icon: <Clock size={14} />,
     title: `Saldo pendiente — ${bk.id}`,
-    text:  `${cust.nombre} · ${tour.titulo_es} · ${formatDOP(link.monto)} · Vence ${link.expira}${link.recordatorios.length ? " · Último rec. " + link.recordatorios.at(-1) : ""}`,
+    text:  `${cust.name} · ${tour.title.es} · ${formatDOP(link.amount)} · Vence ${link.expiresAt}${link.reminders.length ? " · Último rec. " + link.reminders.at(-1) : ""}`,
   });
 });
 
@@ -61,7 +62,7 @@ alerts.push({
   type: "info",
   icon: <CheckCircle2 size={14} />,
   title: "Cupos disponibles",
-  text: `${PLAZA_AV.tour_nombre}: ${PLAZA_AV.cupos_libres} libres el ${PLAZA_AV.fecha_display} · ${PICO_AV.tour_nombre}: ${PICO_AV.cupos_libres} libres el ${PICO_AV.fecha_display}`,
+  text: `${PLAZA_AV.tourName}: ${PLAZA_AV.availableSeats} libres el ${PLAZA_AV.displayDate} · ${PICO_AV.tourName}: ${PICO_AV.availableSeats} libres el ${PICO_AV.displayDate}`,
 });
 
 const alertStyles = {
@@ -72,21 +73,21 @@ const alertStyles = {
 
 /* ── Recent reservations (last 5 bookings) ──────────────── */
 const recentReservations = BOOKINGS.slice().reverse().slice(0, 5).map(bk => {
-  const cust = custMap[bk.customer_id];
-  const tour = tourMap[bk.tour_id];
+  const cust = custMap[bk.customerId];
+  const tour = tourMap[bk.tourId];
   return { bk, cust, tour };
 });
 
 const statusConf: Record<string, { variant: "success" | "warning" | "danger" | "info"; label: string }> = {
-  pagado_completo: { variant: "success", label: "Pagado"       },
-  deposito_pagado: { variant: "info",    label: "Depósito"     },
-  saldo_vencido:   { variant: "danger",  label: "Saldo vencido"},
+  fullyPaid:     { variant: "success", label: "Pagado"       },
+  depositPaid:   { variant: "info",    label: "Depósito"     },
+  balanceOverdue:{ variant: "danger",  label: "Saldo vencido"},
 };
 
 /* ── Weekly upcoming ────────────────────────────────────── */
 const weekDays = ["Lun 15", "Mar 16", "Mié 17", "Jue 18", "Vie 19", "Sáb 20", "Dom 21"];
 const weekTours: Record<string, string[]> = {
-  "Dom 21": [PLAZA_AV.tour_nombre.split(" ").slice(0, 2).join(" ")],
+  "Dom 21": [PLAZA_AV.tourName?.split(" ").slice(0, 2).join(" ") ?? ""],
 };
 
 /* ── Chart tooltip ──────────────────────────────────────── */
@@ -105,7 +106,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 }
 
 /* ── Component ──────────────────────────────────────────── */
-export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void }) {
+export function Dashboard({ onNavigate }: { onNavigate?: (page: Page) => void }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, sans-serif" }}>
 
@@ -205,7 +206,7 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
           </thead>
           <tbody>
             {recentReservations.map(({ bk, cust, tour }, i) => {
-              const st = statusConf[bk.estado];
+              const st = statusConf[bk.status];
               return (
                 <tr key={bk.id} style={{ borderBottom: i < recentReservations.length - 1 ? "1px solid #F1F5F9" : "none" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
@@ -213,16 +214,16 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
                 >
                   <td style={{ padding: "11px 14px", fontWeight: 700, color: "#006CFE", fontSize: 12, whiteSpace: "nowrap" }}>{bk.id}</td>
                   <td style={{ padding: "11px 14px" }}>
-                    <div style={{ fontSize: 13, color: "#0F172A", fontWeight: 500, whiteSpace: "nowrap" }}>{cust.nombre}</div>
-                    <div style={{ fontSize: 10, color: "#94A3B8" }}>{cust.pais}</div>
+                    <div style={{ fontSize: 13, color: "#0F172A", fontWeight: 500, whiteSpace: "nowrap" }}>{cust.name}</div>
+                    <div style={{ fontSize: 10, color: "#94A3B8" }}>{cust.country}</div>
                   </td>
-                  <td style={{ padding: "11px 14px", fontSize: 12, color: "#475569", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tour.titulo_es}</td>
-                  <td style={{ padding: "11px 14px", fontSize: 12, color: "#475569", whiteSpace: "nowrap" }}>{bk.fecha_display}</td>
-                  <td style={{ padding: "11px 14px", fontSize: 13, textAlign: "center" }}>{bk.pax_total}</td>
-                  <td style={{ padding: "11px 14px", fontSize: 12, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDOP(bk.precio_total)}</td>
-                  <td style={{ padding: "11px 14px", fontSize: 12, fontWeight: 600, color: "#16A34A", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDOP(bk.deposito_pagado)}</td>
-                  <td style={{ padding: "11px 14px", fontSize: 12, fontWeight: 600, color: bk.saldo_pendiente > 0 ? "#F13540" : "#94A3B8", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                    {bk.saldo_pendiente > 0 ? formatDOP(bk.saldo_pendiente) : "—"}
+                  <td style={{ padding: "11px 14px", fontSize: 12, color: "#475569", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tour.title.es}</td>
+                  <td style={{ padding: "11px 14px", fontSize: 12, color: "#475569", whiteSpace: "nowrap" }}>{bk.displayDate}</td>
+                  <td style={{ padding: "11px 14px", fontSize: 13, textAlign: "center" }}>{bk.totalPax}</td>
+                  <td style={{ padding: "11px 14px", fontSize: 12, fontWeight: 700, color: "#0F172A", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDOP(bk.totalPrice)}</td>
+                  <td style={{ padding: "11px 14px", fontSize: 12, fontWeight: 600, color: "#16A34A", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDOP(bk.depositPaid)}</td>
+                  <td style={{ padding: "11px 14px", fontSize: 12, fontWeight: 600, color: bk.outstandingBalance > 0 ? "#F13540" : "#94A3B8", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                    {bk.outstandingBalance > 0 ? formatDOP(bk.outstandingBalance) : "—"}
                   </td>
                   <td style={{ padding: "11px 14px" }}>
                     <StatusBadge variant={st.variant} label={st.label} />
@@ -261,10 +262,10 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
             })}
           </div>
           <div style={{ marginTop: 12, padding: "10px 12px", background: "#F0FDF4", borderRadius: 6, fontSize: 12, color: "#15803D" }}>
-            <strong>21 Jun 2026</strong> — {PLAZA_AV.tour_nombre} · {PLAZA_AV.cupos_reservados} inscriptos · {PLAZA_AV.cupos_libres} plazas libres
+            <strong>21 Jun 2026</strong> — {PLAZA_AV.tourName} · {PLAZA_AV.reservedSeats} inscriptos · {PLAZA_AV.availableSeats} plazas libres
           </div>
           <div style={{ marginTop: 6, padding: "10px 12px", background: "#EFF6FF", borderRadius: 6, fontSize: 12, color: "#1D4ED8" }}>
-            <strong>19 Jul 2026</strong> — {PICO_AV.tour_nombre} · {PICO_AV.cupos_reservados} inscriptos · {PICO_AV.cupos_libres} plazas libres
+            <strong>19 Jul 2026</strong> — {PICO_AV.tourName} · {PICO_AV.reservedSeats} inscriptos · {PICO_AV.availableSeats} plazas libres
           </div>
         </div>
 
@@ -274,20 +275,20 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: string) => void 
           <p style={{ fontSize: 12, color: "#94A3B8", margin: "0 0 20px" }}>Cobrado vs. total reservado</p>
 
           {TOURS_DATA.map(t => {
-            const bks    = BOOKINGS.filter(b => b.tour_id === t.id);
-            const cobrado = bks.reduce((s, b) => s + b.deposito_pagado, 0);
-            const total   = bks.reduce((s, b) => s + b.precio_total, 0);
-            const saldo   = bks.reduce((s, b) => s + b.saldo_pendiente, 0);
-            const vencidos= PAYMENT_LINKS.filter(l => l.estado === "vencido" && bks.some(b => b.id === l.booking_id));
+            const bks    = BOOKINGS.filter(b => b.tourId === t.id);
+            const cobrado = bks.reduce((s, b) => s + b.depositPaid, 0);
+            const total   = bks.reduce((s, b) => s + b.totalPrice, 0);
+            const saldo   = bks.reduce((s, b) => s + b.outstandingBalance, 0);
+            const vencidos= PAYMENT_LINKS.filter(l => l.status === "expired" && bks.some(b => b.id === l.bookingId));
             const pct = total > 0 ? (cobrado / total) * 100 : 0;
 
             return (
               <div key={t.id} style={{ marginBottom: 18 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6 }}>
                   <div>
-                    <div style={{ fontWeight: 700, color: "#0F172A" }}>{t.titulo_es}</div>
+                    <div style={{ fontWeight: 700, color: "#0F172A" }}>{t.title.es}</div>
                     <div style={{ color: "#94A3B8", fontSize: 11 }}>
-                      {AVAILABILITY.find(a => a.tour_id === t.id)?.fecha_display} · {bks.length} reservas · {t.pricing}
+                      {AVAILABILITY.find(a => a.tourId === t.id)?.displayDate} · {bks.length} reservas · {getTourPriceDisplay(t)}
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>

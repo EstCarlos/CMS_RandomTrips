@@ -16,16 +16,16 @@ const bkMap   = Object.fromEntries(BOOKINGS.map(b => [b.id, b]));
 type PagoTab = "saldos" | "links" | "transacciones" | "reembolsos";
 
 const LINK_STATUS: Record<string, { variant: "success" | "neutral" | "danger" | "warning"; label: string }> = {
-  enviado:   { variant: "warning", label: "Enviado"   },
-  vencido:   { variant: "danger",  label: "Vencido"   },
-  pendiente: { variant: "neutral", label: "Pendiente" },
-  pagado:    { variant: "success", label: "Pagado"    },
+  sent:    { variant: "warning", label: "Enviado"   },
+  expired: { variant: "danger",  label: "Vencido"   },
+  pending: { variant: "neutral", label: "Pendiente" },
+  paid:    { variant: "success", label: "Pagado"    },
 };
 
 const TX_TIPO_COLOR: Record<string, string> = {
-  deposito: "#006CFE",
-  saldo:    "#16A34A",
-  reembolso: "#F13540",
+  deposit: "#006CFE",
+  balance: "#16A34A",
+  refund:  "#F13540",
 };
 
 /* ── Reembolso Modal ─────────────────────────────────── */
@@ -42,7 +42,7 @@ function ReembolsoModal({ onClose }: { onClose: () => void }) {
         </div>
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
           <FormField label="Reserva" required>
-            <SelectField value="" options={BOOKINGS.map(b => ({ value: b.id, label: `${b.id} · ${custMap[b.customer_id].nombre}` }))} placeholder="Seleccionar reserva..." />
+            <SelectField value="" options={BOOKINGS.map(b => ({ value: b.id, label: `${b.id} · ${custMap[b.customerId].name}` }))} placeholder="Seleccionar reserva..." />
           </FormField>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <FormField label="Monto (DOP)" required><Input placeholder="2200" /></FormField>
@@ -73,14 +73,14 @@ export function Pagos() {
   const [selected, setSelected]         = useState<Set<string>>(new Set());
   const [showReembolso, setShowReembolso] = useState(false);
 
-  const saldosPendientes = BOOKINGS.filter(b => b.saldo_pendiente > 0).map(b => {
-    const cust = custMap[b.customer_id];
-    const tour = tourMap[b.tour_id];
-    const link = PAYMENT_LINKS.find(l => l.booking_id === b.id);
+  const saldosPendientes = BOOKINGS.filter(b => b.outstandingBalance > 0).map(b => {
+    const cust = custMap[b.customerId];
+    const tour = tourMap[b.tourId];
+    const link = PAYMENT_LINKS.find(l => l.bookingId === b.id);
     return { bk: b, cust, tour, link };
   });
 
-  const totalPendiente = saldosPendientes.reduce((s, x) => s + x.bk.saldo_pendiente, 0);
+  const totalPendiente = saldosPendientes.reduce((s, x) => s + x.bk.outstandingBalance, 0);
 
   const TABS: { id: PagoTab; label: string; count?: number }[] = [
     { id: "saldos",        label: "Saldos pendientes", count: saldosPendientes.length },
@@ -103,7 +103,7 @@ export function Pagos() {
           { label: "Total cobrado",       value: formatDOP(TOTAL_COBRADO),    color: "#16A34A", bg: "#F0FDF4" },
           { label: "Saldo por cobrar",    value: formatDOP(TOTAL_SALDO),      color: "#F13540", bg: "#FEF2F2" },
           { label: "Transacciones",       value: PAYMENTS.length,             color: "#006CFE", bg: "#EFF6FF" },
-          { label: "Links vencidos",      value: PAYMENT_LINKS.filter(l => l.estado === "vencido").length, color: "#F59E0B", bg: "#FFFBEB" },
+          { label: "Links vencidos",      value: PAYMENT_LINKS.filter(l => l.status === "expired").length, color: "#F59E0B", bg: "#FFFBEB" },
         ].map(k => (
           <div key={k.label} style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 12, color: "#475569" }}>{k.label}</span>
@@ -154,7 +154,7 @@ export function Pagos() {
               <tbody>
                 {saldosPendientes.map(({ bk, cust, tour, link }, i) => {
                   const isSel = selected.has(bk.id);
-                  const isVencido = bk.estado === "saldo_vencido";
+                  const isVencido = bk.status === "balanceOverdue";
                   return (
                     <tr key={bk.id}
                       style={{ borderBottom: i < saldosPendientes.length - 1 ? "1px solid #F1F5F9" : "none", background: isSel ? "#F0F7FF" : isVencido ? "#FFF7ED" : "transparent" }}
@@ -165,22 +165,22 @@ export function Pagos() {
                         <input type="checkbox" checked={isSel} onChange={() => toggleSel(bk.id)} style={{ cursor: "pointer", accentColor: "#006CFE" }} />
                       </td>
                       <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontSize: 12 }}>{bk.id}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 13, color: "#0F172A" }}>{cust.nombre}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tour.titulo_es}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{bk.fecha_display}</td>
-                      <td style={{ padding: "12px 14px", fontWeight: 700, color: isVencido ? "#F13540" : "#0F172A", fontVariantNumeric: "tabular-nums" }}>{formatDOP(bk.saldo_pendiente)}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>≈ ${dopToUSD(bk.saldo_pendiente)}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 13, color: "#0F172A" }}>{cust.name}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tour.title.es}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{bk.displayDate}</td>
+                      <td style={{ padding: "12px 14px", fontWeight: 700, color: isVencido ? "#F13540" : "#0F172A", fontVariantNumeric: "tabular-nums" }}>{formatDOP(bk.outstandingBalance)}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>≈ ${dopToUSD(bk.outstandingBalance)}</td>
                       <td style={{ padding: "12px 14px" }}>
                         {link ? (
                           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                            <span style={{ fontSize: 11, fontFamily: "monospace", color: "#475569" }}>{link.invoice_id}</span>
-                            <StatusBadge variant={LINK_STATUS[link.estado].variant} label={LINK_STATUS[link.estado].label} />
-                            <span style={{ fontSize: 10, color: "#94A3B8" }}>Vence {link.expira}</span>
+                            <span style={{ fontSize: 11, fontFamily: "monospace", color: "#475569" }}>{link.invoiceId}</span>
+                            <StatusBadge variant={LINK_STATUS[link.status].variant} label={LINK_STATUS[link.status].label} />
+                            <span style={{ fontSize: 10, color: "#94A3B8" }}>Vence {link.expiresAt}</span>
                           </div>
                         ) : <span style={{ fontSize: 12, color: "#94A3B8" }}>Sin link</span>}
                       </td>
                       <td style={{ padding: "12px 14px", fontSize: 11, color: "#94A3B8" }}>
-                        {link?.recordatorios.length ? link.recordatorios.join(", ") : "Ninguno"}
+                        {link?.reminders.length ? link.reminders.join(", ") : "Ninguno"}
                       </td>
                       <td style={{ padding: "12px 14px" }}>
                         <div style={{ display: "flex", gap: 5 }}>
@@ -217,31 +217,31 @@ export function Pagos() {
             </thead>
             <tbody>
               {PAYMENT_LINKS.map((l, i) => {
-                const bk   = bkMap[l.booking_id];
-                const cust = custMap[bk.customer_id];
+                const bk   = bkMap[l.bookingId];
+                const cust = custMap[bk.customerId];
                 return (
-                  <tr key={l.invoice_id} style={{ borderBottom: i < PAYMENT_LINKS.length - 1 ? "1px solid #F1F5F9" : "none" }}
+                  <tr key={l.invoiceId} style={{ borderBottom: i < PAYMENT_LINKS.length - 1 ? "1px solid #F1F5F9" : "none" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   >
-                    <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontSize: 12, fontFamily: "monospace" }}>{l.invoice_id}</td>
-                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{l.booking_id}</td>
-                    <td style={{ padding: "12px 14px", fontSize: 13, color: "#0F172A" }}>{cust.nombre}</td>
-                    <td style={{ padding: "12px 14px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatDOP(l.monto)}</td>
-                    <td style={{ padding: "12px 14px" }}><StatusBadge variant={LINK_STATUS[l.estado].variant} label={LINK_STATUS[l.estado].label} /></td>
-                    <td style={{ padding: "12px 14px", fontSize: 12, color: l.estado === "vencido" ? "#F13540" : "#94A3B8" }}>{l.expira}</td>
-                    <td style={{ padding: "12px 14px", fontSize: 11, color: "#94A3B8" }}>{l.recordatorios.length > 0 ? l.recordatorios.join(", ") : "—"}</td>
+                    <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontSize: 12, fontFamily: "monospace" }}>{l.invoiceId}</td>
+                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{l.bookingId}</td>
+                    <td style={{ padding: "12px 14px", fontSize: 13, color: "#0F172A" }}>{cust.name}</td>
+                    <td style={{ padding: "12px 14px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatDOP(l.amount)}</td>
+                    <td style={{ padding: "12px 14px" }}><StatusBadge variant={LINK_STATUS[l.status].variant} label={LINK_STATUS[l.status].label} /></td>
+                    <td style={{ padding: "12px 14px", fontSize: 12, color: l.status === "expired" ? "#F13540" : "#94A3B8" }}>{l.expiresAt}</td>
+                    <td style={{ padding: "12px 14px", fontSize: 11, color: "#94A3B8" }}>{l.reminders.length > 0 ? l.reminders.join(", ") : "—"}</td>
                     <td style={{ padding: "12px 14px" }}>
                       <div style={{ display: "flex", gap: 4 }}>
                         <button title="Copiar link" style={{ width: 27, height: 27, borderRadius: 6, border: "1px solid #E5E7EB", background: "#FFFFFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <Copy size={11} color="#475569" />
                         </button>
-                        {l.estado !== "pagado" && (
+                        {l.status !== "paid" && (
                           <button title="Reenviar" style={{ width: 27, height: 27, borderRadius: 6, border: "1px solid #E5E7EB", background: "#FFFFFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <Send size={11} color="#475569" />
                           </button>
                         )}
-                        {l.estado === "vencido" && (
+                        {l.status === "expired" && (
                           <button title="Regenerar" style={{ width: 27, height: 27, borderRadius: 6, border: "1px solid #BFDBFE", background: "#EFF6FF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <RefreshCw size={11} color="#006CFE" />
                           </button>
@@ -275,25 +275,25 @@ export function Pagos() {
               </thead>
               <tbody>
                 {PAYMENTS.map((p, i) => {
-                  const bk   = bkMap[p.booking_id];
-                  const cust = bk ? custMap[bk.customer_id] : null;
-                  const color = TX_TIPO_COLOR[p.tipo] || "#475569";
+                  const bk   = bkMap[p.bookingId];
+                  const cust = bk ? custMap[bk.customerId] : null;
+                  const color = TX_TIPO_COLOR[p.type] || "#475569";
                   return (
-                    <tr key={p.paypal_txn_id} style={{ borderBottom: i < PAYMENTS.length - 1 ? "1px solid #F1F5F9" : "none" }}
+                    <tr key={p.paypalTxnId} style={{ borderBottom: i < PAYMENTS.length - 1 ? "1px solid #F1F5F9" : "none" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
-                      <td style={{ padding: "12px 14px", fontSize: 11, color: "#94A3B8", fontFamily: "monospace" }}>{p.paypal_txn_id}</td>
-                      <td style={{ padding: "12px 14px", fontWeight: 600, color: "#006CFE", fontSize: 12 }}>{p.booking_id}</td>
-                      <td style={{ padding: "12px 14px", fontSize: 13, color: "#0F172A" }}>{cust?.nombre ?? "—"}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 11, color: "#94A3B8", fontFamily: "monospace" }}>{p.paypalTxnId}</td>
+                      <td style={{ padding: "12px 14px", fontWeight: 600, color: "#006CFE", fontSize: 12 }}>{p.bookingId}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 13, color: "#0F172A" }}>{cust?.name ?? "—"}</td>
                       <td style={{ padding: "12px 14px" }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: color + "18", color, textTransform: "capitalize" }}>{p.tipo}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: color + "18", color, textTransform: "capitalize" }}>{p.type}</span>
                       </td>
-                      <td style={{ padding: "12px 14px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatDOP(p.monto)}</td>
+                      <td style={{ padding: "12px 14px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{formatDOP(p.amount)}</td>
                       <td style={{ padding: "12px 14px" }}>
                         <StatusBadge variant="success" label="Completado" />
                       </td>
-                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{p.fecha}</td>
+                      <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{p.date}</td>
                     </tr>
                   );
                 })}

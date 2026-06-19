@@ -42,6 +42,7 @@ src/
 │   │       ├── OperadorDashboard.tsx, MiPerfil.tsx
 │   │       └── StubPage.tsx
 │   └── data/
+│       ├── types.ts                 # Interfaces y union types centrales (fuente de verdad del modelo)
 │       └── realData.ts              # Tours/destinos REALES + dummy data para reservas/cotizaciones
 └── styles/
     └── theme.css                    # CSS vars (genéricas shadcn — paleta RT está hardcoded inline)
@@ -62,15 +63,22 @@ src/
 - Tipografía: `Inter, sans-serif` en el CMS (la paleta de marcas full solo aplica en la web pública)
 
 ### Naming
-- Componentes en PascalCase. Archivos `.tsx` con mismo nombre del componente exportado
+- Componentes en `PascalCase`. Archivos `.tsx` con mismo nombre del componente exportado
 - Tabs internas en TourEditor exportan como `TabInfo`, `TabPricing`, etc.
-- Variables en español cuando representan dominio del negocio (`titulo_es`, `pricing_model`, `cupos_libres`)
-- Funciones helper en `realData.ts`: `formatDOP`, `dopToUSD`, `dopToEUR`
+- **Todos los identificadores en `camelCase`** — sin snake_case en nombres de variables o propiedades
+- **Tipos e interfaces en `PascalCase`** — `Tour`, `Booking`, `PricingModel`, etc.
+- **Valores de enum en `camelCase`** — `"singleDay"`, `"published"`, `"pendingPayment"`, etc.
+- **IDs en `kebab-case`** — `"dest-samana"`, `"tour-playa-fronton"` (no cambian)
+- **ISO codes y términos locales se preservan** — `DOP`, `USD`, `EUR`, `itbis`, `rnc`
+- Funciones helper en `realData.ts`: `formatDOP`, `dopToUSD`, `dopToEUR`, `getTourPriceDisplay`, `findDestination`, `findExperience`
+- **Archivo central de tipos:** `src/app/data/types.ts` — importar desde ahí, nunca redefinir interfaces locales
 
 ### Bilingüe
-- Todos los campos de contenido visible al cliente final tienen sufijo `_es` y `_en`
-- El componente `BilingualField` (en `FormField.tsx`) maneja la edición con tabs ES/EN integrados
-- Si un campo solo tiene `_es` por ahora, agregar también `_en` al modelo aunque sea vacío
+- Todos los campos de contenido con variante de idioma se modelan como **objeto anidado** `{ es: string; en: string }`
+  - Ejemplo: `title: { es: "Playa Frontón", en: "Playa Frontón" }` (NO `titulo_es` + `titulo_en`)
+- El tipo primitivo es `Bilingual` (importar de `src/app/data/types.ts`)
+- El componente `BilingualField` (en `FormField.tsx`) recibe `value: Bilingual` y `onChange: (v: Bilingual) => void`
+- Si un campo solo tiene contenido en `es` por ahora, inicializar `en: ""` igualmente
 
 ### Data placeholders
 - Los datos en `realData.ts` para `DESTINATIONS`, `EXPERIENCES`, `TOURS_DATA`, `SITE_CONFIG`, `PAGES_DATA` son **REALES** del negocio. No inventar destinos ni cambiar nombres

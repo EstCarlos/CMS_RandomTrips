@@ -6,7 +6,7 @@ import { MEDIA_ASSETS } from "../../data/realData";
 type Asset = typeof MEDIA_ASSETS[0];
 
 const ASSOC_LABELS: Record<string, string> = {
-  tour: "Tour", destino: "Destino", experiencia: "Experiencia", "sin-asociar": "Sin asociar",
+  tour: "Tour", destination: "Destino", experience: "Experiencia", "sin-asociar": "Sin asociar",
 };
 
 /* ── Confirm delete ───────────────────────────────────── */
@@ -40,8 +40,8 @@ function ConfirmDeleteModal({ count, onConfirm, onClose }: { count: number; onCo
 
 /* ── Asset Drawer ─────────────────────────────────────── */
 function AssetDrawer({ asset, onClose }: { asset: Asset; onClose: () => void }) {
-  const [altES, setAltES] = useState(asset.altES);
-  const [altEN, setAltEN] = useState(asset.altEN);
+  const [altES, setAltES] = useState(asset.alt?.es ?? "");
+  const [altEN, setAltEN] = useState(asset.alt?.en ?? "");
   const [showConfirm, setShowConfirm] = useState(false);
 
   return (
@@ -60,23 +60,23 @@ function AssetDrawer({ asset, onClose }: { asset: Asset; onClose: () => void }) 
             {/* Preview */}
             <div style={{ height: 180, borderRadius: 8, overflow: "hidden", marginBottom: 16, background: asset.color }}>
               {asset.url ? (
-                <img src={asset.url} alt={asset.altES} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={asset.url} alt={asset.alt?.es} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
                 <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
                   <span style={{ fontSize: 48 }}>{asset.emoji}</span>
-                  <span style={{ fontSize: 11, color: "#475569" }}>{asset.altES}</span>
+                  <span style={{ fontSize: 11, color: "#475569" }}>{asset.alt?.es}</span>
                 </div>
               )}
             </div>
 
             {/* Meta */}
             <div style={{ background: "#F7F8FA", borderRadius: 6, padding: "10px 12px", marginBottom: 16, fontSize: 12 }}>
-              <div style={{ fontWeight: 600, color: "#0F172A", marginBottom: 6, wordBreak: "break-all" }}>{asset.nombre}</div>
+              <div style={{ fontWeight: 600, color: "#0F172A", marginBottom: 6, wordBreak: "break-all" }}>{asset.name}</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, color: "#475569" }}>
-                {asset.dimensiones !== "—" && <span>📐 {asset.dimensiones}</span>}
-                {asset.peso !== "—" && <span>📦 {asset.peso}</span>}
-                <span>📅 {asset.subido}</span>
-                <span style={{ textTransform: "capitalize" }}>🏷️ {asset.tipo}</span>
+                {asset.dimensions !== "—" && <span>📐 {asset.dimensions}</span>}
+                {asset.size !== "—" && <span>📦 {asset.size}</span>}
+                <span>📅 {asset.uploadedAt}</span>
+                <span style={{ textTransform: "capitalize" }}>🏷️ {asset.type}</span>
               </div>
             </div>
 
@@ -96,7 +96,7 @@ function AssetDrawer({ asset, onClose }: { asset: Asset; onClose: () => void }) 
               <div style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", marginBottom: 6 }}>Asociación</div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "#F7F8FA", borderRadius: 6, border: "1px solid #E5E7EB" }}>
                 <Tag size={13} color="#94A3B8" />
-                <span style={{ fontSize: 12, color: "#475569" }}>{ASSOC_LABELS[asset.asociacion]}: <strong>{asset.asociadoA}</strong></span>
+                <span style={{ fontSize: 12, color: "#475569" }}>{ASSOC_LABELS[asset.association]}: <strong>{asset.associatedTo}</strong></span>
               </div>
             </div>
 
@@ -176,8 +176,8 @@ export function Galeria() {
 
   const filtered = MEDIA_ASSETS.filter(a => {
     const q = search.toLowerCase();
-    return (!q || a.nombre.toLowerCase().includes(q) || a.altES.toLowerCase().includes(q) || a.asociadoA.toLowerCase().includes(q))
-      && (!filterTipo || a.tipo === filterTipo);
+    return (!q || a.name.toLowerCase().includes(q) || (a.alt?.es ?? "").toLowerCase().includes(q) || a.associatedTo.toLowerCase().includes(q))
+      && (!filterTipo || a.type === filterTipo);
   });
 
   const toggleSel  = (id: string) => { const n = new Set(selected); n.has(id) ? n.delete(id) : n.add(id); setSelected(n); };
@@ -199,7 +199,7 @@ export function Galeria() {
         <select value={filterTipo} onChange={e => setFilterTipo(e.target.value)}
           style={{ padding: "6px 12px", border: `1px solid ${filterTipo ? "#006CFE" : "#E5E7EB"}`, borderRadius: 6, fontSize: 13, background: filterTipo ? "#EFF6FF" : "#FFFFFF", color: filterTipo ? "#006CFE" : "#475569", outline: "none", cursor: "pointer" }}>
           <option value="">Tipo</option>
-          <option value="foto">📷 Fotos</option>
+          <option value="photo">📷 Fotos</option>
           <option value="video">🎬 Videos</option>
         </select>
         {(search || filterTipo) && (
@@ -250,14 +250,14 @@ export function Galeria() {
               <div onClick={() => setActiveAsset(a)}
                 style={{ height: 130, background: a.color, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {a.url ? (
-                  <img src={a.url} alt={a.altES} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={a.url} alt={a.alt?.es} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
                   <span style={{ fontSize: 40 }}>{a.emoji}</span>
                 )}
               </div>
               <div style={{ padding: "8px 10px" }}>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#0F172A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.nombre}</div>
-                <div style={{ fontSize: 10, color: "#94A3B8", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.altES}</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: "#0F172A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</div>
+                <div style={{ fontSize: 10, color: "#94A3B8", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.alt?.es}</div>
               </div>
             </div>
           );
