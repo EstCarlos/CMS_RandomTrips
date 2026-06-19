@@ -9,9 +9,9 @@ const tourMap = Object.fromEntries(TOURS_DATA.map(t => [t.id, t]));
 
 const enrichedCustomers = CUSTOMERS.map(c => {
   const bks      = BOOKINGS.filter(b => b.customerId === c.id);
-  const valorTotal = bks.reduce((s, b) => s + b.depositPaid, 0);
+  const totalValue = bks.reduce((s, b) => s + b.depositPaid, 0);
   const lastBk   = bks.at(-1);
-  return { ...c, totalReservas: bks.length, valorTotal, bks, ultimaActividad: lastBk ? "Jun 2026" : "—" };
+  return { ...c, totalBookings: bks.length, totalValue, bks, lastActivity: lastBk ? "Jun 2026" : "—" };
 });
 
 /* ── Detalle ───────────────────────────────────────────── */
@@ -56,9 +56,9 @@ function ClienteDetalle({ cliente, onBack }: { cliente: typeof enrichedCustomers
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, textAlign: "center" }}>
           {[
-            { label: "Reservas",     value: String(cliente.totalReservas) },
-            { label: "Cobrado",      value: formatDOP(cliente.valorTotal) },
-            { label: "Última activ.", value: cliente.ultimaActividad },
+            { label: "Reservas",     value: String(cliente.totalBookings) },
+            { label: "Cobrado",      value: formatDOP(cliente.totalValue) },
+            { label: "Última activ.", value: cliente.lastActivity },
           ].map(k => (
             <div key={k.label}>
               <div style={{ fontSize: 14, fontWeight: 800, color: "#006CFE" }}>{k.value}</div>
@@ -232,8 +232,8 @@ export function Clientes() {
                   <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{c.email}</td>
                   <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{c.country} · {c.preferredLanguage}</td>
                   <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{c.preferredCurrency}</td>
-                  <td style={{ padding: "12px 14px", textAlign: "center", fontWeight: 700, fontSize: 13 }}>{c.totalReservas}</td>
-                  <td style={{ padding: "12px 14px", fontWeight: 700, color: "#16A34A", fontVariantNumeric: "tabular-nums" }}>{formatDOP(c.valorTotal)}</td>
+                  <td style={{ padding: "12px 14px", textAlign: "center", fontWeight: 700, fontSize: 13 }}>{c.totalBookings}</td>
+                  <td style={{ padding: "12px 14px", fontWeight: 700, color: "#16A34A", fontVariantNumeric: "tabular-nums" }}>{formatDOP(c.totalValue)}</td>
                   <td style={{ padding: "12px 14px", fontWeight: 600, color: saldo > 0 ? "#F13540" : "#94A3B8", fontVariantNumeric: "tabular-nums" }}>
                     {saldo > 0 ? formatDOP(saldo) : "—"}
                   </td>

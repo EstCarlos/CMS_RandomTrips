@@ -276,19 +276,19 @@ function Categorias() {
 
 /* ── Email templates ──────────────────────────────────── */
 const EMAIL_TEMPLATES = [
-  { id: "E1", name: "Confirmación de reserva",     variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{fecha_tour}}", "{{id_reserva}}", "{{link_voucher}}"] },
-  { id: "E2", name: "Recordatorio de saldo (48h)", variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{fecha_tour}}", "{{saldo}}", "{{link_pago}}"] },
-  { id: "E3", name: "Recordatorio de saldo (7d)",  variables: ["{{cliente_nombre}}", "{{saldo}}", "{{link_pago}}"] },
-  { id: "E4", name: "Cotización enviada",           variables: ["{{cliente_nombre}}", "{{tour_propuesto}}", "{{precio}}", "{{validez_dias}}", "{{link_aceptar}}"] },
-  { id: "E5", name: "Recordatorio del tour (24h)", variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{punto_encuentro}}", "{{hora_salida}}"] },
-  { id: "E6", name: "Post-tour (reseña)",           variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{link_resena}}"] },
+  { id: "E1", name: "Confirmación de reserva",     variables: ["{{customerName}}", "{{tourName}}", "{{tourDate}}", "{{bookingId}}", "{{voucherLink}}"] },
+  { id: "E2", name: "Recordatorio de saldo (48h)", variables: ["{{customerName}}", "{{tourName}}", "{{tourDate}}", "{{outstandingBalance}}", "{{paymentLink}}"] },
+  { id: "E3", name: "Recordatorio de saldo (7d)",  variables: ["{{customerName}}", "{{outstandingBalance}}", "{{paymentLink}}"] },
+  { id: "E4", name: "Cotización enviada",           variables: ["{{customerName}}", "{{proposedTour}}", "{{price}}", "{{validityDays}}", "{{acceptLink}}"] },
+  { id: "E5", name: "Recordatorio del tour (24h)", variables: ["{{customerName}}", "{{tourName}}", "{{meetingPoint}}", "{{departureTime}}"] },
+  { id: "E6", name: "Post-tour (reseña)",           variables: ["{{customerName}}", "{{tourName}}", "{{reviewLink}}"] },
 ];
 
 function EmailTemplates() {
   const [activeTemplate, setActiveTemplate] = useState(EMAIL_TEMPLATES[0]);
   const [lang, setLang] = useState<"es" | "en">("es");
-  const [bodyES, setBodyES] = useState(`Hola {{cliente_nombre}},\n\nTu reserva para el tour <strong>{{tour_nombre}}</strong> ha sido confirmada para el {{fecha_tour}}.\n\nID de reserva: {{id_reserva}}\n\nDescarga tu voucher aquí: {{link_voucher}}\n\n¡Te esperamos!\nEquipo Random Trips`);
-  const [bodyEN, setBodyEN] = useState(`Hi {{cliente_nombre}},\n\nYour booking for the <strong>{{tour_nombre}}</strong> tour has been confirmed for {{fecha_tour}}.\n\nBooking ID: {{id_reserva}}\n\nDownload your voucher here: {{link_voucher}}\n\nSee you soon!\nRandom Trips Team`);
+  const [bodyES, setBodyES] = useState(`Hola {{customerName}},\n\nTu reserva para el tour <strong>{{tourName}}</strong> ha sido confirmada para el {{tourDate}}.\n\nID de reserva: {{bookingId}}\n\nDescarga tu voucher aquí: {{voucherLink}}\n\n¡Te esperamos!\nEquipo Random Trips`);
+  const [bodyEN, setBodyEN] = useState(`Hi {{customerName}},\n\nYour booking for the <strong>{{tourName}}</strong> tour has been confirmed for {{tourDate}}.\n\nBooking ID: {{bookingId}}\n\nDownload your voucher here: {{voucherLink}}\n\nSee you soon!\nRandom Trips Team`);
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 16 }}>
