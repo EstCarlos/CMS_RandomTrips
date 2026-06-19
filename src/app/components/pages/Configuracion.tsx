@@ -276,12 +276,12 @@ function Categorias() {
 
 /* ── Email templates ──────────────────────────────────── */
 const EMAIL_TEMPLATES = [
-  { id: "E1", nombre: "Confirmación de reserva",     variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{fecha_tour}}", "{{id_reserva}}", "{{link_voucher}}"] },
-  { id: "E2", nombre: "Recordatorio de saldo (48h)", variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{fecha_tour}}", "{{saldo}}", "{{link_pago}}"] },
-  { id: "E3", nombre: "Recordatorio de saldo (7d)",  variables: ["{{cliente_nombre}}", "{{saldo}}", "{{link_pago}}"] },
-  { id: "E4", nombre: "Cotización enviada",           variables: ["{{cliente_nombre}}", "{{tour_propuesto}}", "{{precio}}", "{{validez_dias}}", "{{link_aceptar}}"] },
-  { id: "E5", nombre: "Recordatorio del tour (24h)", variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{punto_encuentro}}", "{{hora_salida}}"] },
-  { id: "E6", nombre: "Post-tour (reseña)",           variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{link_resena}}"] },
+  { id: "E1", name: "Confirmación de reserva",     variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{fecha_tour}}", "{{id_reserva}}", "{{link_voucher}}"] },
+  { id: "E2", name: "Recordatorio de saldo (48h)", variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{fecha_tour}}", "{{saldo}}", "{{link_pago}}"] },
+  { id: "E3", name: "Recordatorio de saldo (7d)",  variables: ["{{cliente_nombre}}", "{{saldo}}", "{{link_pago}}"] },
+  { id: "E4", name: "Cotización enviada",           variables: ["{{cliente_nombre}}", "{{tour_propuesto}}", "{{precio}}", "{{validez_dias}}", "{{link_aceptar}}"] },
+  { id: "E5", name: "Recordatorio del tour (24h)", variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{punto_encuentro}}", "{{hora_salida}}"] },
+  { id: "E6", name: "Post-tour (reseña)",           variables: ["{{cliente_nombre}}", "{{tour_nombre}}", "{{link_resena}}"] },
 ];
 
 function EmailTemplates() {
@@ -303,7 +303,7 @@ function EmailTemplates() {
             fontWeight: activeTemplate.id === t.id ? 600 : 400,
             color: activeTemplate.id === t.id ? "#006CFE" : "#475569",
           }}>
-            {t.nombre}
+            {t.name}
           </button>
         ))}
       </div>
@@ -311,7 +311,7 @@ function EmailTemplates() {
       {/* Editor */}
       <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{activeTemplate.nombre}</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{activeTemplate.name}</span>
           <div style={{ display: "flex", gap: 6 }}>
             {(["es", "en"] as const).map(l => (
               <button key={l} onClick={() => setLang(l)} style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${lang === l ? "#006CFE" : "#E5E7EB"}`, background: lang === l ? "#EFF6FF" : "#FFFFFF", color: lang === l ? "#006CFE" : "#475569", fontSize: 12, cursor: "pointer", fontWeight: lang === l ? 600 : 400 }}>

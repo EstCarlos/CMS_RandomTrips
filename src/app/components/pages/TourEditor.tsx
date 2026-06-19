@@ -415,7 +415,7 @@ function TabExperiencias({ tour, onChange }: { tour: Tour; onChange: (k: keyof T
     id: e.id,
     label: e.name.es,
     sub: findDestination(e.destinationId)?.name.es ?? "",
-    tipo: e.type,
+    type: e.type,
   }));
   const filtered = allExp.filter(e => e.label.toLowerCase().includes(search.toLowerCase()) && !selected.includes(e.id));
 
@@ -434,7 +434,7 @@ function TabExperiencias({ tour, onChange }: { tour: Tour; onChange: (k: keyof T
               onMouseEnter={f => (f.currentTarget.style.background = "#F7F8FA")}
               onMouseLeave={f => (f.currentTarget.style.background = "transparent")}
             >
-              <div><div style={{ fontWeight: 500 }}>{e.label}</div><div style={{ fontSize: 11, color: "#94A3B8" }}>{e.sub} · {e.tipo}</div></div>
+              <div><div style={{ fontWeight: 500 }}>{e.label}</div><div style={{ fontSize: 11, color: "#94A3B8" }}>{e.sub} · {e.type}</div></div>
               <Plus size={13} color="#006CFE" />
             </button>
           ))}

@@ -28,7 +28,7 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
     const q = search.toLowerCase();
     const destNames = t.destinationIds.map(id => findDestination(id)?.name.es ?? id).join(" ");
     const mSearch = !q || t.title.es.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || destNames.toLowerCase().includes(q);
-    const mTipo   = !filters.tipo   || t.type   === filters.tipo;
+    const mTipo   = !filters.type   || t.type   === filters.type;
     const mStatus = !filters.status || t.status === filters.status;
     return mSearch && mTipo && mStatus;
   });
@@ -45,7 +45,7 @@ export function Tours({ onEditTour }: { onEditTour?: (id: string) => void }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <FilterBar
           filters={[
-            { key: "tipo", label: "Tipo", type: "select", options: [
+            { key: "type", label: "Tipo", type: "select", options: [
               { value: "singleDay", label: "🎯 Fijo" }, { value: "multiDay", label: "🗓️ Multi-día" }, { value: "privateRequest", label: "📩 Privado" },
             ]},
             { key: "status", label: "Estado", type: "select", options:

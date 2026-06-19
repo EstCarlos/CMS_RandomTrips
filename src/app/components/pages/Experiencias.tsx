@@ -107,7 +107,7 @@ export function Experiencias() {
     const q = search.toLowerCase();
     return (!q || e.name.es.toLowerCase().includes(q) || (findDestination(e.destinationId)?.name.es.toLowerCase() ?? "").includes(q))
       && (!filters.destino || e.destinationId === filters.destino)
-      && (!filters.tipo    || e.type          === filters.tipo)
+      && (!filters.type    || e.type          === filters.type)
       && (!filters.status  || e.status         === filters.status);
   });
 
@@ -117,7 +117,7 @@ export function Experiencias() {
         <FilterBar
           filters={[
             { key: "destino", label: "Destino", type: "select", options: DESTINATIONS.map(d => ({ value: d.id, label: d.name.es })) },
-            { key: "tipo",    label: "Tipo",    type: "select", options: Object.keys(tipoEmoji).map(t => ({ value: t, label: t })) },
+            { key: "type",    label: "Tipo",    type: "select", options: Object.keys(tipoEmoji).map(t => ({ value: t, label: t })) },
             { key: "status",  label: "Estado",  type: "select", options: Object.entries(statusConf).map(([v, s]) => ({ value: v, label: s.label })) },
           ]}
           values={filters}

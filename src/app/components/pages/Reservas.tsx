@@ -60,20 +60,20 @@ function buildDetalleReserva(bkId: string) {
   const link = PAYMENT_LINKS.find(l => l.bookingId === bk.id);
   return {
     id: bk.id,
-    cliente: cust.name,
+    customerName: cust.name,
     email: cust.email,
-    telefono: cust.phone,
+    phone: cust.phone,
     country: cust.country,
     tour: tour.title.es,
-    destino: tour.destinationIds.map(id => findDestination(id)?.name.es ?? id).join(", "),
-    fechaTour: bk.displayDate ?? "",
-    fechaCreacion: "Jun 2026",
+    destination: tour.destinationIds.map(id => findDestination(id)?.name.es ?? id).join(", "),
+    tourDate: bk.displayDate ?? "",
+    creationDate: "Jun 2026",
     pax: bk.totalPax,
     total: bk.totalPrice,
     paid: bk.depositPaid,
     status: bk.status === "fullyPaid" ? "confirmed" : bk.status === "balanceOverdue" ? "pending" : "partial",
-    operador: "Random Trips",
-    notas: link ? `Link de pago: ${link.invoiceId} · Vence ${link.expiresAt} · Estado: ${link.status}` : "",
+    operator: "Random Trips",
+    notes: link ? `Link de pago: ${link.invoiceId} · Vence ${link.expiresAt} · Estado: ${link.status}` : "",
   };
 }
 
