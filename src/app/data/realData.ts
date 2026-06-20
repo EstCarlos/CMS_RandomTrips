@@ -7,7 +7,7 @@ import type {
   SiteConfig, ServiceCatalogItem, Destination, Experience,
   MediaAsset, Tour, Availability, Page, Customer, Booking,
   Payment, PaymentLink, Testimonial, BookingStatus, PaymentLinkStatus,
-  LanguageCode,
+  LanguageCode, Operator,
 } from "./types";
 
 /* ── SiteConfig ──────────────────────────────────────── */
@@ -400,6 +400,146 @@ export const MEDIA_ASSETS: MediaAsset[] = [
     color: "#7DD3FC",
     emoji: "🌊",
   },
+  {
+    id: "media-samana-sunrise",
+    name: "samana-amanecer-peninsula.jpg",
+    type: "photo",
+    association: "destination",
+    associatedTo: "dest-samana",
+    url: "",
+    alt: { es: "Amanecer en la Península de Samaná", en: "Sunrise over Samaná Peninsula" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "May 2026",
+    color: "#FEF9C3",
+    emoji: "🌅",
+  },
+  {
+    id: "media-barahona-rio",
+    name: "barahona-rio-turquesa.jpg",
+    type: "photo",
+    association: "destination",
+    associatedTo: "dest-barahona",
+    url: "",
+    alt: { es: "Río turquesa en Barahona", en: "Turquoise river in Barahona" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "Jun 2026",
+    color: "#A5F3FC",
+    emoji: "🌊",
+  },
+  {
+    id: "media-grupo-tour-1",
+    name: "random-trips-grupo-aventura.jpg",
+    type: "photo",
+    association: "global",
+    associatedTo: "global",
+    url: "",
+    alt: { es: "Grupo disfrutando tour de aventura", en: "Group enjoying adventure tour" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "Jun 2026",
+    color: "#D1FAE5",
+    emoji: "👥",
+  },
+  {
+    id: "media-almuerzo-playa",
+    name: "almuerzo-tipico-playa.jpg",
+    type: "photo",
+    association: "global",
+    associatedTo: "global",
+    url: "",
+    alt: { es: "Almuerzo típico dominicano en la playa", en: "Traditional Dominican lunch on the beach" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "May 2026",
+    color: "#FED7AA",
+    emoji: "🍽️",
+  },
+  {
+    id: "media-bote-fronton",
+    name: "bote-ruta-fronton.jpg",
+    type: "photo",
+    association: "tour",
+    associatedTo: "tour-playa-fronton",
+    url: "",
+    alt: { es: "Bote en ruta a Playa Frontón", en: "Boat en route to Playa Frontón" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "Abr 2026",
+    color: "#DBEAFE",
+    emoji: "⛵",
+  },
+  {
+    id: "media-pico-group",
+    name: "pico-diego-grupo-cumbre.jpg",
+    type: "photo",
+    association: "tour",
+    associatedTo: "tour-pico-diego-salto-jima",
+    url: "",
+    alt: { es: "Grupo en la cima del Pico Diego de Ocampo", en: "Group at the summit of Pico Diego de Ocampo" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "Jul 2026",
+    color: "#BBF7D0",
+    emoji: "🏆",
+  },
+  {
+    id: "media-piscina-natural",
+    name: "piscina-natural-samana.jpg",
+    type: "photo",
+    association: "tour",
+    associatedTo: "tour-playa-fronton",
+    url: "",
+    alt: { es: "Piscina natural en aguas cristalinas de Samaná", en: "Natural pool in crystal-clear Samaná waters" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "Abr 2026",
+    color: "#A7F3D0",
+    emoji: "🏊",
+  },
+  {
+    id: "media-travelhood-sd",
+    name: "santo-domingo-zona-colonial.jpg",
+    type: "photo",
+    association: "destination",
+    associatedTo: "dest-santo-domingo",
+    url: "",
+    alt: { es: "Zona Colonial de Santo Domingo", en: "Colonial Zone of Santo Domingo" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "Mar 2026",
+    color: "#FED7AA",
+    emoji: "🏛️",
+  },
+  {
+    id: "media-bahia-aguilas",
+    name: "bahia-aguilas-pedernales.jpg",
+    type: "photo",
+    association: "destination",
+    associatedTo: "dest-pedernales",
+    url: "",
+    alt: { es: "Bahía de las Águilas en Pedernales", en: "Bahía de las Águilas in Pedernales" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "Mar 2026",
+    color: "#FCA5A5",
+    emoji: "🦅",
+  },
+  {
+    id: "media-plaza-chaleco",
+    name: "balneario-plaza-chaleco-guia.jpg",
+    type: "photo",
+    association: "tour",
+    associatedTo: "tour-balneario-la-plaza",
+    url: "",
+    alt: { es: "Guías con chaleco salvavidas en Balneario La Plaza", en: "Guides with life vests at Balneario La Plaza" },
+    dimensions: "—",
+    size: "—",
+    uploadedAt: "Jun 2026",
+    color: "#7DD3FC",
+    emoji: "🦺",
+  },
 ];
 
 /* ── Tours ───────────────────────────────────────────── */
@@ -444,6 +584,10 @@ export const TOURS_DATA: Tour[] = [
     },
     galleryIds: ["media-pico-1", "media-pico-2", "media-jima-1"],
     operatorId: "op-randomtrips",
+    seoMeta: {
+      title: { es: "Pico Diego de Ocampo + Salto de Jima | Random Trips", en: "Pico Diego de Ocampo + Salto de Jima | Random Trips" },
+      description: { es: "Aventura, senderismo y un amanecer indescriptible. El tesoro oculto de la Cordillera Septentrional.", en: "" },
+    },
     status: "published",
     logistics: {
       departurePoint: "Bon Plaza Paraíso, Av. Winston Churchill, Santo Domingo",
@@ -552,6 +696,10 @@ export const TOURS_DATA: Tour[] = [
     },
     galleryIds: [],
     operatorId: "op-randomtrips",
+    seoMeta: {
+      title: { es: "TravelHood Plan 1 — República Dominicana 7 días | Random Trips", en: "TravelHood Plan 1 — Dominican Republic 7 days | Random Trips" },
+      description: { es: "Recorrido completo por RD: Santo Domingo, Puerto Plata, Río San Juan, Frontón, Las Terrenas y Sur Profundo + Bahía de las Águilas.", en: "" },
+    },
     status: "published",
     logistics: {
       departurePoint: "Bon Plaza Paraíso, Av. Winston Churchill, Santo Domingo",
@@ -609,6 +757,10 @@ export const TOURS_DATA: Tour[] = [
     },
     galleryIds: ["media-fronton-1", "media-fronton-2", "media-fronton-flyer"],
     operatorId: "op-randomtrips",
+    seoMeta: {
+      title: { es: "Playa Frontón Samaná | Random Trips", en: "Frontón Beach Samaná | Random Trips" },
+      description: { es: "Un full day por las playas escondidas de la península: acantilados, cocoteros, piscinas naturales y aguas turquesa.", en: "" },
+    },
     status: "published",
     logistics: {
       departurePoint: "Bon Plaza Paraíso, Av. Winston Churchill, Santo Domingo",
@@ -665,6 +817,10 @@ export const TOURS_DATA: Tour[] = [
     },
     galleryIds: ["media-plaza-1", "media-plaza-2"],
     operatorId: "op-randomtrips",
+    seoMeta: {
+      title: { es: "Balneario La Plaza Barahona | Random Trips", en: "Balneario La Plaza Barahona | Random Trips" },
+      description: { es: "El río más cristalino de República Dominicana. Agua turquesa, naturaleza y aventura en un solo lugar.", en: "" },
+    },
     status: "published",
     logistics: {
       departurePoint: "Bon Plaza Paraíso, Av. Winston Churchill, Santo Domingo",
@@ -902,6 +1058,58 @@ export const TESTIMONIALS = [
   },
 ];
 
+/* ── Operators ───────────────────────────────────────── */
+export const OPERATORS: Operator[] = [
+  {
+    id: "op-randomtrips",
+    type: "internal",
+    name: "Random Trips",
+    contact: {
+      email: "info@randomtrips.co",
+      phone: "+1 (849) 589-2057",
+      whatsapp: "+1 (849) 589-2057",
+    },
+    assignedTourIds: ["tour-playa-fronton", "tour-pico-diego-salto-jima", "tour-travelhood-plan-1"],
+    status: "active",
+  },
+  {
+    id: "op-caribe-adventures",
+    type: "external",
+    name: "Caribe Adventures",
+    contact: {
+      email: "ops@caribead.do",
+      phone: "+1 (809) 555-0102",
+      whatsapp: "+1 (809) 555-0102",
+    },
+    assignedTourIds: ["tour-bayahibe-isla-saona"],
+    status: "active",
+  },
+  {
+    id: "op-montana-verde",
+    type: "external",
+    name: "Montaña Verde Tours",
+    contact: {
+      email: "info@montanaverde.do",
+      phone: "+1 (829) 555-0203",
+      whatsapp: "+1 (829) 555-0203",
+    },
+    assignedTourIds: ["tour-camping-valle-dios"],
+    status: "active",
+  },
+  {
+    id: "op-sur-profundo",
+    type: "external",
+    name: "Sur Profundo Eco",
+    contact: {
+      email: "reservas@surprofundo.do",
+      phone: "+1 (809) 555-0304",
+      whatsapp: null,
+    },
+    assignedTourIds: ["tour-bahia-aguilas-premium"],
+    status: "inactive",
+  },
+];
+
 /* ── Helpers ─────────────────────────────────────────── */
 export function formatDOP(amount: number): string {
   return `RD$ ${amount.toLocaleString("es-DO")}`;
@@ -919,6 +1127,7 @@ export const findDestination = (id: string) => DESTINATIONS.find(d => d.id === i
 export const findExperience  = (id: string) => EXPERIENCES.find(e => e.id === id);
 export const findTour        = (id: string) => TOURS_DATA.find(t => t.id === id);
 export const findService     = (id: string) => SERVICE_CATALOG.find(s => s.id === id);
+export const findOperator    = (id: string) => OPERATORS.find(o => o.id === id);
 
 export const getDestinationName = (id: string, lang: LanguageCode = "es"): string =>
   findDestination(id)?.name[lang] ?? id;
