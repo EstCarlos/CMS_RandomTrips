@@ -57,6 +57,14 @@ export interface PricingModel {
   maxPaxGroup?: number;
 }
 
+// ── SEO ────────────────────────────────────────────────
+
+export interface SeoMeta {
+  title: Bilingual;
+  description: Bilingual;
+  ogImageId?: string;
+}
+
 // ── Tour sub-entities ──────────────────────────────────
 
 export interface DayAlternative {
@@ -123,6 +131,7 @@ export interface Tour {
   details: TourDetails;
   galleryIds: string[];
   operatorId: string;
+  seoMeta?: SeoMeta;
   logistics: TourLogistics;
   whatsappGroupUrl: string | null;
   // UI / aggregates
@@ -272,7 +281,7 @@ export interface Operator {
   id: string;
   type: OperatorType;
   name: string;
-  contact?: { name?: string; phone?: string; email?: string };
+  contact?: { name?: string; phone?: string; email?: string; whatsapp?: string | null };
   assignedTourIds: string[];
   status: "active" | "inactive"; // TODO: confirmar naming
 }

@@ -10,7 +10,7 @@ import { Btn } from "../ui/Modal";
 import type { Tour, Day, DayAlternative, TourType, PricingModelType, Tier } from "../../data/types";
 import {
   TOURS_DATA, SERVICE_CATALOG, DESTINATIONS, EXPERIENCES,
-  MEDIA_ASSETS, SITE_CONFIG, formatDOP, dopToUSD, dopToEUR,
+  MEDIA_ASSETS, SITE_CONFIG, OPERATORS, formatDOP, dopToUSD, dopToEUR,
   findDestination,
 } from "../../data/realData";
 
@@ -867,9 +867,30 @@ function TabLogistica({ tour, onChange }: { tour: Tour; onChange: (k: keyof Tour
       <FormField label="Link grupo WhatsApp (opcional)">
         <Input value={tour.whatsappGroupUrl ?? ""} onChange={v => onChange("whatsappGroupUrl", v || null)} placeholder="https://chat.whatsapp.com/..." />
       </FormField>
-      <FormField label="Operador">
-        <div style={{ padding: "9px 12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, color: "#0F172A", background: "#F7F8FA" }}>{tour.operatorId}</div>
+      <FormField label="Operador asignado">
+        <select
+          value={tour.operatorId}
+          onChange={e => onChange("operatorId", e.target.value)}
+          style={{ width: "100%", padding: "9px 12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, color: "#0F172A", background: "#FFFFFF", outline: "none", cursor: "pointer", boxSizing: "border-box" }}
+        >
+          {OPERATORS.filter(o => o.status === "active").map(o => (
+            <option key={o.id} value={o.id}>
+              {o.name} {o.type === "external" ? "(externo)" : "(interno)"}
+            </option>
+          ))}
+        </select>
       </FormField>
+      {(() => {
+        const op = OPERATORS.find(o => o.id === tour.operatorId);
+        if (!op) return null;
+        return (
+          <div style={{ padding: "10px 14px", background: "#F7F8FA", borderRadius: 6, border: "1px solid #E5E7EB", fontSize: 12, color: "#475569" }}>
+            <div style={{ fontWeight: 600, color: "#0F172A", marginBottom: 4 }}>{op.name}</div>
+            {op.contact?.email && <div>{op.contact.email} · {op.contact.phone}</div>}
+            {op.contact?.whatsapp && <div style={{ marginTop: 2, color: "#16A34A" }}>WhatsApp: {op.contact.whatsapp}</div>}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -877,36 +898,139 @@ function TabLogistica({ tour, onChange }: { tour: Tour; onChange: (k: keyof Tour
 /* ══════════════════════════════════════════════════════════
    TAB 9 — Galería
 ══════════════════════════════════════════════════════════ */
-function TabGaleria({ tour }: { tour: Tour }) {
-  const assets = MEDIA_ASSETS.filter(a => tour.galleryIds.includes(a.id));
+function TabGaleria({ tour, onChange }: { tour: Tour; onChange: (k: keyof Tour, v: unknown) => void }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const assets = MEDIA_ASSETS.filter(a => tour.galleryIds.includes(a.id))
+    .sort((a, b) => tour.galleryIds.indexOf(a.id) - tour.galleryIds.indexOf(b.id));
+
+  const available = MEDIA_ASSETS.filter(a => !tour.galleryIds.includes(a.id));
+
+  const addToGallery = (assetId: string) => {
+    if (!tour.galleryIds.includes(assetId)) {
+      onChange("galleryIds", [...tour.galleryIds, assetId]);
+    }
+    setPickerOpen(false);
+  };
+
+  const removeFromGallery = (assetId: string) => {
+    onChange("galleryIds", tour.galleryIds.filter(id => id !== assetId));
+  };
+
+  const setPrimary = (assetId: string) => {
+    onChange("galleryIds", [assetId, ...tour.galleryIds.filter(id => id !== assetId)]);
+  };
+
+  const moveGalleryItem = (idx: number, direction: "up" | "down") => {
+    const arr = [...tour.galleryIds];
+    const target = direction === "up" ? idx - 1 : idx + 1;
+    if (target < 0 || target >= arr.length) return;
+    [arr[idx], arr[target]] = [arr[target], arr[idx]];
+    onChange("galleryIds", arr);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Action buttons */}
       <div style={{ display: "flex", gap: 8 }}>
-        <Btn variant="secondary" size="sm"><Image size={13} /> Agregar de biblioteca</Btn>
-        <Btn variant="primary" size="sm"><Upload size={13} /> Subir nueva</Btn>
+        <Btn variant="secondary" size="sm" onClick={() => setPickerOpen(p => !p)}>
+          <Image size={13} /> Agregar de biblioteca
+        </Btn>
+        <Btn variant="primary" size="sm" onClick={() => alert("La subida de archivos estará disponible cuando se conecte el backend (Fase 4).")}>
+          <Upload size={13} /> Subir nueva
+        </Btn>
       </div>
+
+      {/* Inline picker panel */}
+      {pickerOpen && (
+        <div style={{ border: "1px solid #E5E7EB", borderRadius: 8, padding: 14, background: "#F7F8FA" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", marginBottom: 10 }}>
+            Selecciona un asset de la biblioteca
+          </div>
+          {available.length === 0 ? (
+            <div style={{ fontSize: 12, color: "#94A3B8" }}>Todos los assets ya están en la galería.</div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+              {available.map(a => (
+                <button
+                  key={a.id}
+                  onClick={() => addToGallery(a.id)}
+                  title={a.alt?.es}
+                  style={{ border: "1px solid #E5E7EB", borderRadius: 6, background: a.color ?? "#F1F5F9", aspectRatio: "16/9", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, padding: 6 }}
+                >
+                  <span style={{ fontSize: 24 }}>{a.emoji}</span>
+                  <span style={{ fontSize: 9, color: "#475569", textAlign: "center", lineHeight: 1.3 }}>{a.alt?.es}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Gallery grid */}
       {assets.length === 0 ? (
         <div style={{ border: "2px dashed #CBD5E1", borderRadius: 8, padding: "40px", textAlign: "center", background: "#F7F8FA" }}>
           <Upload size={28} color="#CBD5E1" style={{ margin: "0 auto 10px" }} />
-          <div style={{ fontSize: 13, color: "#475569" }}>Arrastra imágenes aquí o usa los botones de arriba</div>
+          <div style={{ fontSize: 13, color: "#475569" }}>Usa "Agregar de biblioteca" para añadir imágenes a la galería</div>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {assets.map((a, i) => (
-            <div key={a.id} style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: i === 0 ? "2px solid #006CFE" : "1px solid #E5E7EB", aspectRatio: "16/9", background: a.color }}>
-              {a.url ? (
-                <img src={a.url} alt={a.alt?.es} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              ) : (
-                <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  <span style={{ fontSize: 32 }}>{a.emoji}</span>
-                  <span style={{ fontSize: 10, color: "#475569", textAlign: "center", padding: "0 8px" }}>{a.alt?.es}</span>
+            <div key={a.id} style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: i === 0 ? "2px solid #006CFE" : "1px solid #E5E7EB", aspectRatio: "16/9", background: a.color ?? "#F1F5F9" }}>
+              {/* Image content — click to set as primary */}
+              <div
+                onClick={() => i !== 0 && setPrimary(a.id)}
+                style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, cursor: i !== 0 ? "pointer" : "default" }}
+              >
+                {a.url ? (
+                  <img src={a.url} alt={a.alt?.es} style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0 }} />
+                ) : (
+                  <>
+                    <span style={{ fontSize: 28 }}>{a.emoji}</span>
+                    <span style={{ fontSize: 9, color: "#475569", textAlign: "center", padding: "0 8px" }}>{a.alt?.es}</span>
+                  </>
+                )}
+              </div>
+
+              {/* Primary badge */}
+              {i === 0 && (
+                <div style={{ position: "absolute", top: 6, left: 6, background: "#006CFE", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, pointerEvents: "none" }}>
+                  PRINCIPAL
                 </div>
               )}
-              {i === 0 && <div style={{ position: "absolute", top: 6, left: 6, background: "#006CFE", color: "#FFFFFF", fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4 }}>PRINCIPAL</div>}
+
+              {/* Remove button */}
+              <button
+                onClick={() => removeFromGallery(a.id)}
+                style={{ position: "absolute", top: 5, right: 5, width: 20, height: 20, borderRadius: "50%", border: "none", background: "#F13540", color: "#FFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+              >
+                <X size={11} />
+              </button>
+
+              {/* Reorder arrows */}
+              <div style={{ position: "absolute", bottom: 5, right: 5, display: "flex", flexDirection: "column", gap: 2 }}>
+                <button
+                  onClick={() => moveGalleryItem(i, "up")}
+                  disabled={i === 0}
+                  style={{ width: 18, height: 18, borderRadius: 4, border: "none", background: i === 0 ? "#E5E7EB" : "#FFFFFF", cursor: i === 0 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+                >
+                  <ChevronUp size={11} color={i === 0 ? "#CBD5E1" : "#475569"} />
+                </button>
+                <button
+                  onClick={() => moveGalleryItem(i, "down")}
+                  disabled={i === assets.length - 1}
+                  style={{ width: 18, height: 18, borderRadius: 4, border: "none", background: i === assets.length - 1 ? "#E5E7EB" : "#FFFFFF", cursor: i === assets.length - 1 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+                >
+                  <ChevronDown size={11} color={i === assets.length - 1 ? "#CBD5E1" : "#475569"} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
+      <div style={{ fontSize: 11, color: "#94A3B8" }}>
+        Haz clic en una imagen no-principal para convertirla en imagen principal de la galería.
+      </div>
     </div>
   );
 }
@@ -915,29 +1039,101 @@ function TabGaleria({ tour }: { tour: Tour }) {
    TAB 10 — SEO
 ══════════════════════════════════════════════════════════ */
 function TabSEO({ tour, onChange }: { tour: Tour; onChange: (k: keyof Tour, v: unknown) => void }) {
+  const seoMeta = tour.seoMeta ?? {
+    title: { es: `${tour.title.es} | Random Trips`, en: `${tour.title.en} | Random Trips` },
+    description: tour.description,
+  };
+  const ogAsset = seoMeta.ogImageId ? MEDIA_ASSETS.find(a => a.id === seoMeta.ogImageId) : null;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <FormField label="Meta título" helper="50–60 caracteres">
+      {/* Meta título */}
+      <FormField label="Meta título" helper="50–60 caracteres recomendados">
         <BilingualField
-          value={{ es: `${tour.title.es} | Random Trips República Dominicana`, en: `${tour.title.en} | Random Trips Dominican Republic` }}
-          onChange={() => {}}
+          value={seoMeta.title}
+          onChange={v => onChange("seoMeta", { ...seoMeta, title: v })}
           placeholder="Título SEO..."
         />
+        <div style={{ display: "flex", gap: 20, marginTop: 5, fontSize: 11 }}>
+          {(["es", "en"] as const).map(lang => {
+            const len = seoMeta.title[lang].length;
+            const color = len === 0 ? "#94A3B8" : (len >= 50 && len <= 60) ? "#16A34A" : "#F59E0B";
+            return <span key={lang} style={{ color }}>{lang.toUpperCase()}: {len} / 60</span>;
+          })}
+        </div>
       </FormField>
-      <FormField label="Meta descripción" helper="150–160 caracteres">
-        <BilingualField value={tour.description} onChange={() => {}} multiline rows={3} />
+
+      {/* Meta descripción */}
+      <FormField label="Meta descripción" helper="150–160 caracteres recomendados">
+        <BilingualField
+          value={seoMeta.description}
+          onChange={v => onChange("seoMeta", { ...seoMeta, description: v })}
+          multiline rows={3}
+          placeholder="Descripción SEO..."
+        />
+        <div style={{ display: "flex", gap: 20, marginTop: 5, fontSize: 11 }}>
+          {(["es", "en"] as const).map(lang => {
+            const len = seoMeta.description[lang].length;
+            const color = len === 0 ? "#94A3B8" : (len >= 150 && len <= 160) ? "#16A34A" : "#F59E0B";
+            return <span key={lang} style={{ color }}>{lang.toUpperCase()}: {len} / 160</span>;
+          })}
+        </div>
       </FormField>
+
+      {/* Slug */}
       <FormField label="Slug visible">
         <div style={{ display: "flex", border: "1px solid #E5E7EB", borderRadius: 6, overflow: "hidden" }}>
           <span style={{ padding: "8px 12px", background: "#F7F8FA", fontSize: 12, color: "#94A3B8", borderRight: "1px solid #E5E7EB", whiteSpace: "nowrap" }}>randomtrips.co/tours/</span>
           <input value={tour.slug} onChange={e => onChange("slug", e.target.value)} style={{ flex: 1, padding: "8px 12px", border: "none", outline: "none", fontSize: 13 }} />
         </div>
       </FormField>
+
+      {/* Google preview */}
       <div style={{ background: "#F7F8FA", borderRadius: 8, padding: "14px 16px" }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Vista previa en Google</div>
         <div style={{ fontSize: 12, color: "#94A3B8" }}>randomtrips.co › tours › {tour.slug}</div>
-        <div style={{ fontSize: 16, color: "#1a0dab" }}>{tour.title.es} | Random Trips</div>
-        <div style={{ fontSize: 13, color: "#545454", lineHeight: 1.5 }}>{tour.description.es}</div>
+        <div style={{ fontSize: 16, color: "#1a0dab" }}>{seoMeta.title.es || `${tour.title.es} | Random Trips`}</div>
+        <div style={{ fontSize: 13, color: "#545454", lineHeight: 1.5 }}>{seoMeta.description.es || tour.description.es}</div>
+      </div>
+
+      {/* OG Image */}
+      <div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", marginBottom: 8 }}>Imagen OG (Open Graph)</div>
+        {ogAsset ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 120, height: 68, borderRadius: 6, background: ogAsset.color ?? "#F1F5F9", border: "1px solid #E5E7EB", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>
+              {ogAsset.url ? <img src={ogAsset.url} alt={ogAsset.alt?.es} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ogAsset.emoji}
+            </div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", marginBottom: 4 }}>{ogAsset.alt?.es}</div>
+              <button onClick={() => onChange("seoMeta", { ...seoMeta, ogImageId: undefined })}
+                style={{ fontSize: 11, color: "#F13540", border: "none", background: "transparent", cursor: "pointer", padding: 0 }}>
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ border: "2px dashed #CBD5E1", borderRadius: 8, padding: "16px", textAlign: "center", background: "#F7F8FA" }}>
+            <Image size={22} color="#CBD5E1" style={{ margin: "0 auto 8px" }} />
+            <div style={{ fontSize: 12, color: "#94A3B8", marginBottom: 10 }}>Sin imagen OG asignada</div>
+            {tour.galleryIds.length > 0 ? (
+              <div>
+                <div style={{ fontSize: 11, color: "#475569", marginBottom: 8 }}>Selecciona una imagen de la galería del tour:</div>
+                <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>
+                  {MEDIA_ASSETS.filter(a => tour.galleryIds.includes(a.id)).map(a => (
+                    <button key={a.id} onClick={() => onChange("seoMeta", { ...seoMeta, ogImageId: a.id })}
+                      title={a.alt?.es}
+                      style={{ width: 60, height: 34, borderRadius: 4, background: a.color ?? "#F1F5F9", border: "1px solid #E5E7EB", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {a.emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <span style={{ fontSize: 12, color: "#94A3B8" }}>Agrega imágenes en la pestaña Galería primero</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1031,7 +1227,7 @@ export function TourEditor({ onBack, tourId }: { onBack: () => void; tourId?: st
         {activeTab === "servicios"    && <TabServicios    tour={tour} onChange={onChange} />}
         {activeTab === "detalles"     && <TabDetalles     tour={tour} onChange={onChange} />}
         {activeTab === "logistica"    && <TabLogistica    tour={tour} onChange={onChange} />}
-        {activeTab === "galeria"      && <TabGaleria      tour={tour} />}
+        {activeTab === "galeria"      && <TabGaleria      tour={tour} onChange={onChange} />}
         {activeTab === "seo"          && <TabSEO          tour={tour} onChange={onChange} />}
       </div>
 
