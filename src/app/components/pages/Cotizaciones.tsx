@@ -7,87 +7,22 @@ import { StatusBadge } from "../ui/StatusBadge";
 import { FilterBar } from "../ui/FilterBar";
 import { FormField, Input, Textarea, SelectField } from "../ui/FormField";
 import { Btn } from "../ui/Modal";
+import type { Quote } from "../../data/types";
+import { QUOTES, findUser, formatDOP } from "../../data/realData";
 
-/* ── Types & mock data ──────────────────────────────────── */
-interface Cotizacion {
-  id: string;
-  name: string;
-  email: string;
-  telefono: string;
-  country: string;
-  language: string;
-  destinos: string[];
-  startDate: string;
-  endDate: string;
-  pax: number;
-  budget: string;
-  mensaje: string;
-  status: "pending" | "sent" | "accepted" | "rejected";
-  assignedTo: string;
-  requestDate: string;
-  pendingHours: number | null;
-  communications: { date: string; type: string; text: string }[];
-}
+/* ── Helpers ────────────────────────────────────────────── */
+const hoursAgo = (iso?: string) =>
+  iso ? Math.round((Date.now() - new Date(iso).getTime()) / 3600000) : null;
+
+const fmtDate = (iso?: string) =>
+  iso ? new Date(iso).toLocaleDateString("es-DO", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
 const STAFF = ["Alejandra Torres", "Carlos Reyes", "María Pérez"];
 
-const mockCots: Cotizacion[] = [
-  {
-    id: "COT-448", name: "Thomas Berg", email: "thomas@email.de", telefono: "+49 170 1234567",
-    country: "🇩🇪 Alemania", language: "DE", destinos: ["Samaná", "La Romana"],
-    startDate: "5 Jul 2026", endDate: "12 Jul 2026", pax: 8, budget: "$3,000–5,000",
-    mensaje: "Buscamos un tour privado para grupo familiar. Preferimos actividades en la naturaleza, sin multitudes. Somos 8 personas, 3 niños.",
-    status: "pending", assignedTo: "Alejandra Torres", requestDate: "14 Jun 2026",
-    pendingHours: 52, communications: [],
-  },
-  {
-    id: "COT-447", name: "Lucia Moreno", email: "lucia@email.es", telefono: "+34 611 987 654",
-    country: "🇪🇸 España", language: "ES", destinos: ["Samaná"],
-    startDate: "30 Jun 2026", endDate: "3 Jul 2026", pax: 4, budget: "$1,500–2,500",
-    mensaje: "Nos interesa hacer el whale watching y las cascadas El Limón. ¿Pueden combinarlos en un paquete?",
-    status: "sent", assignedTo: "Carlos Reyes", requestDate: "15 Jun 2026",
-    pendingHours: null, communications: [
-      { date: "15 Jun 2026 14:30", type: "email", text: "Cotización COT-447 enviada con propuesta de 2 días en Samaná." },
-    ],
-  },
-  {
-    id: "COT-446", name: "David Kim", email: "david@email.kr", telefono: "+82 10 1234 5678",
-    country: "🇰🇷 Corea", language: "EN", destinos: ["Los Haitises"],
-    startDate: "5 Jul 2026", endDate: "5 Jul 2026", pax: 2, budget: "$500–800",
-    mensaje: "We are looking for a private eco-tour to Los Haitises with an English-speaking guide.",
-    status: "pending", assignedTo: "Alejandra Torres", requestDate: "13 Jun 2026",
-    pendingHours: 70, communications: [],
-  },
-  {
-    id: "COT-445", name: "Rachel Green", email: "rachel@email.com", telefono: "+1 917 555 0180",
-    country: "🇺🇸 USA", language: "EN", destinos: ["La Romana", "Samaná"],
-    startDate: "28 Jun 2026", endDate: "5 Jul 2026", pax: 6, budget: "$4,000+",
-    mensaje: "Honeymoon + family reunion combo trip. Looking for luxury options.",
-    status: "accepted", assignedTo: "Alejandra Torres", requestDate: "12 Jun 2026",
-    pendingHours: null, communications: [
-      { date: "13 Jun 2026 10:00", type: "email", text: "Cotización enviada con paquete premium 7 días." },
-      { date: "14 Jun 2026 16:45", type: "email", text: "Cliente aceptó y realizó depósito del 25%." },
-    ],
-  },
-  {
-    id: "COT-444", name: "Pierre Moreau", email: "pierre@email.fr", telefono: "+33 6 11 22 33 44",
-    country: "🇫🇷 Francia", language: "FR", destinos: ["Santo Domingo"],
-    startDate: "20 Jun 2026", endDate: "20 Jun 2026", pax: 3, budget: "< $500",
-    mensaje: "Tour cultural de Santo Domingo. Guía en francés si es posible.",
-    status: "rejected", assignedTo: "Carlos Reyes", requestDate: "11 Jun 2026",
-    pendingHours: null, communications: [
-      { date: "12 Jun 2026 09:00", type: "email", text: "Cotización enviada. Sin guía en francés disponible." },
-      { date: "13 Jun 2026 11:15", type: "email", text: "Cliente rechazó por falta de guía en francés." },
-    ],
-  },
-  {
-    id: "COT-443", name: "Isabella Costa", email: "isabella@email.br", telefono: "+55 11 91234 5678",
-    country: "🇧🇷 Brasil", language: "PT", destinos: ["Puerto Plata"],
-    startDate: "15 Jul 2026", endDate: "17 Jul 2026", pax: 5, budget: "$2,000–3,000",
-    mensaje: "Grupo de amigas. Queremos aventura y playa. Presupuesto flexible.",
-    status: "pending", assignedTo: "María Pérez", requestDate: "16 Jun 2026",
-    pendingHours: 8, communications: [],
-  },
+const TOURS_CATALOG = [
+  "Isla Saona Full Day", "Cascadas El Limón", "Whale Watching Samaná",
+  "Los Haitises Ecoturismo", "Santo Domingo City Tour", "Puerto Plata Adventure",
+  "Jarabacoa Rafting", "Custom",
 ];
 
 const STATUS_CONF = {
@@ -97,14 +32,8 @@ const STATUS_CONF = {
   rejected: { variant: "danger"  as const, label: "Rechazada",  tab: "Rechazadas" },
 };
 
-const TOURS_CATALOG = [
-  "Isla Saona Full Day", "Cascadas El Limón", "Whale Watching Samaná",
-  "Los Haitises Ecoturismo", "Santo Domingo City Tour", "Puerto Plata Adventure",
-  "Jarabacoa Rafting", "Custom",
-];
-
 /* ── Cotización Detalle ─────────────────────────────────── */
-function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => void }) {
+function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) {
   const [tourPropuesto, setTourPropuesto] = useState("");
   const [precio, setPrecio] = useState("");
   const [moneda, setMoneda] = useState("USD");
@@ -113,6 +42,8 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
   const [sent, setSent] = useState(false);
 
   const isPending = cot.status === "pending";
+  const pendingHours = hoursAgo(cot.createdAt);
+  const assignedName = findUser(cot.assignedToUserId ?? "")?.name ?? "—";
 
   return (
     <div style={{ fontFamily: "Inter, sans-serif" }}>
@@ -124,12 +55,12 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div>
             <span style={{ fontSize: 22, fontWeight: 800, color: "#0F172A" }}>{cot.id}</span>
-            <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>Solicitada el {cot.requestDate}</span>
+            <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>Solicitada el {fmtDate(cot.createdAt)}</span>
           </div>
           <StatusBadge variant={STATUS_CONF[cot.status].variant} label={STATUS_CONF[cot.status].label} />
-          {cot.pendingHours && (
+          {pendingHours !== null && isPending && (
             <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#F13540", background: "#FEF2F2", padding: "3px 8px", borderRadius: 20 }}>
-              <Clock size={11} /> {cot.pendingHours}h sin respuesta
+              <Clock size={11} /> {pendingHours}h sin respuesta
             </div>
           )}
         </div>
@@ -146,16 +77,15 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
             </div>
             <div style={{ padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {[
-                { label: "Nombre",   value: cot.name       },
-                { label: "Email",    value: cot.email      },
-                { label: "Teléfono", value: cot.telefono   },
-                { label: "País",     value: cot.country    },
-                { label: "Idioma",   value: cot.language   },
-                { label: "Asignado a", value: cot.assignedTo },
+                { label: "Nombre",     value: cot.contact.name     },
+                { label: "Email",      value: cot.contact.email     },
+                { label: "Teléfono",   value: cot.contact.phone     },
+                { label: "País",       value: cot.contact.country   },
+                { label: "Asignado a", value: assignedName          },
               ].map(f => (
                 <div key={f.label}>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{f.label}</div>
-                  <div style={{ fontSize: 13, color: "#0F172A" }}>{f.value}</div>
+                  <div style={{ fontSize: 13, color: "#0F172A" }}>{f.value ?? "—"}</div>
                 </div>
               ))}
             </div>
@@ -172,40 +102,39 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Destinos</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                    {cot.destinos.map(d => (
+                    {cot.requestedDestinations.map(d => (
                       <span key={d} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: "#EFF6FF", color: "#1D4ED8" }}>{d}</span>
                     ))}
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Fechas</div>
-                  <div style={{ fontSize: 13, color: "#0F172A" }}>{cot.startDate}</div>
-                  {cot.endDate !== cot.startDate && <div style={{ fontSize: 12, color: "#94A3B8" }}>hasta {cot.endDate}</div>}
+                  <div style={{ fontSize: 13, color: "#0F172A" }}>{cot.requestedDates}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Pax / Presupuesto</div>
                   <div style={{ fontSize: 13, color: "#0F172A" }}>{cot.pax} personas</div>
-                  <div style={{ fontSize: 12, color: "#94A3B8" }}>{cot.budget}</div>
+                  <div style={{ fontSize: 12, color: "#94A3B8" }}>{cot.approximateBudget ? formatDOP(cot.approximateBudget) : "N/D"}</div>
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Mensaje del cliente</div>
                 <div style={{ padding: "12px 14px", background: "#F7F8FA", borderRadius: 6, fontSize: 13, color: "#475569", lineHeight: 1.6, fontStyle: "italic" }}>
-                  "{cot.mensaje}"
+                  "{cot.message}"
                 </div>
               </div>
             </div>
           </section>
 
           {/* Comunicaciones previas */}
-          {cot.communications.length > 0 && (
+          {(cot.communications ?? []).length > 0 && (
             <section style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
               <div style={{ padding: "12px 16px", borderBottom: "1px solid #E5E7EB", display: "flex", alignItems: "center", gap: 6 }}>
                 <MessageSquare size={13} color="#94A3B8" />
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.06em" }}>Comunicaciones previas</span>
               </div>
               <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-                {cot.communications.map((c, i) => (
+                {(cot.communications ?? []).map((c, i) => (
                   <div key={i} style={{ display: "flex", gap: 10 }}>
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Mail size={12} color="#006CFE" />
@@ -237,7 +166,7 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
                     <Check size={22} color="#16A34A" />
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>Cotización enviada</div>
-                  <div style={{ fontSize: 12, color: "#94A3B8", marginTop: 4 }}>Email enviado a {cot.email}</div>
+                  <div style={{ fontSize: 12, color: "#94A3B8", marginTop: 4 }}>Email enviado a {cot.contact.email}</div>
                 </div>
               ) : (
                 <>
@@ -292,7 +221,7 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
                       <Send size={14} /> Enviar cotización + link de pago
                     </button>
                     <div style={{ fontSize: 11, color: "#94A3B8", textAlign: "center" }}>
-                      Se enviará email a <strong>{cot.email}</strong> con la propuesta y un link de depósito del 25%.
+                      Se enviará email a <strong>{cot.contact.email}</strong> con la propuesta y un link de depósito del 25%.
                     </div>
                   </div>
                 </>
@@ -309,21 +238,21 @@ function CotizacionDetalle({ cot, onBack }: { cot: Cotizacion; onBack: () => voi
 export function Cotizaciones() {
   const [activeTab, setActiveTab] = useState<"pending" | "sent" | "accepted" | "rejected">("pending");
   const [search, setSearch] = useState("");
-  const [detalle, setDetalle] = useState<Cotizacion | null>(null);
+  const [detalle, setDetalle] = useState<Quote | null>(null);
 
   if (detalle) return <CotizacionDetalle cot={detalle} onBack={() => setDetalle(null)} />;
 
   const counts = {
-    pending:  mockCots.filter(c => c.status === "pending").length,
-    sent:     mockCots.filter(c => c.status === "sent").length,
-    accepted: mockCots.filter(c => c.status === "accepted").length,
-    rejected: mockCots.filter(c => c.status === "rejected").length,
+    pending:  QUOTES.filter(c => c.status === "pending").length,
+    sent:     QUOTES.filter(c => c.status === "sent").length,
+    accepted: QUOTES.filter(c => c.status === "accepted").length,
+    rejected: QUOTES.filter(c => c.status === "rejected").length,
   };
 
-  const filtered = mockCots.filter(c => {
+  const filtered = QUOTES.filter(c => {
     const q = search.toLowerCase();
     const mTab    = c.status === activeTab;
-    const mSearch = !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
+    const mSearch = !q || (c.contact.name ?? "").toLowerCase().includes(q) || (c.contact.email ?? "").toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
     return mTab && mSearch;
   });
 
@@ -333,6 +262,8 @@ export function Cotizaciones() {
     { id: "accepted", label: "Aceptadas"  },
     { id: "rejected", label: "Rechazadas" },
   ];
+
+  const pendingOver48 = QUOTES.filter(c => c.status === "pending" && (hoursAgo(c.createdAt) ?? 0) > 48);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, sans-serif" }}>
@@ -378,10 +309,10 @@ export function Cotizaciones() {
       />
 
       {/* Urgency banner for pending */}
-      {activeTab === "pending" && mockCots.filter(c => c.status === "pending" && (c.pendingHours ?? 0) > 48).length > 0 && (
+      {activeTab === "pending" && pendingOver48.length > 0 && (
         <div style={{ padding: "10px 16px", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 8, fontSize: 13, color: "#B91C1C", display: "flex", alignItems: "center", gap: 8 }}>
           <Clock size={14} />
-          <strong>{mockCots.filter(c => c.status === "pending" && (c.pendingHours ?? 0) > 48).length} cotizaciones</strong> llevan más de 48h sin respuesta.
+          <strong>{pendingOver48.length} cotizaciones</strong> llevan más de 48h sin respuesta.
         </div>
       )}
 
@@ -401,51 +332,53 @@ export function Cotizaciones() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr><td colSpan={9} style={{ padding: "48px", textAlign: "center", color: "#94A3B8", fontSize: 13 }}>Sin cotizaciones en esta categoría</td></tr>
-              ) : filtered.map((c, i) => (
-                <tr key={c.id}
-                  onClick={() => setDetalle(c)}
-                  style={{ borderBottom: i < filtered.length - 1 ? "1px solid #F1F5F9" : "none", cursor: "pointer" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                >
-                  <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontSize: 12 }}>{c.id}</td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: "#0F172A" }}>{c.name}</div>
-                    <div style={{ fontSize: 11, color: "#94A3B8" }}>{c.email}</div>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                      {c.destinos.map(d => (
-                        <span key={d} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 20, background: "#F1F5F9", color: "#475569" }}>{d}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569", whiteSpace: "nowrap" }}>
-                    {c.startDate}{c.endDate !== c.startDate ? ` → ${c.endDate}` : ""}
-                  </td>
-                  <td style={{ padding: "12px 14px", textAlign: "center" }}>
-                    <span style={{ fontWeight: 700, fontSize: 13 }}>{c.pax}</span>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                      <StatusBadge variant={STATUS_CONF[c.status].variant} label={STATUS_CONF[c.status].label} />
-                      {c.pendingHours && (
-                        <span style={{ fontSize: 10, color: (c.pendingHours ?? 0) > 48 ? "#F13540" : "#F59E0B", display: "flex", alignItems: "center", gap: 3 }}>
-                          <Clock size={9} />{c.pendingHours}h
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{c.assignedTo.split(" ")[0]}</td>
-                  <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8", whiteSpace: "nowrap" }}>{c.requestDate}</td>
-                  <td style={{ padding: "12px 14px" }} onClick={e => e.stopPropagation()}>
-                    <button onClick={() => setDetalle(c)}
-                      style={{ padding: "4px 10px", borderRadius: 6, border: "none", background: c.status === "pending" ? "#006CFE" : "#F1F5F9", color: c.status === "pending" ? "#FFFFFF" : "#475569", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
-                      {c.status === "pending" ? "Responder" : "Ver"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              ) : filtered.map((c, i) => {
+                const hours = hoursAgo(c.createdAt);
+                const assignedName = findUser(c.assignedToUserId ?? "")?.name ?? "—";
+                return (
+                  <tr key={c.id}
+                    onClick={() => setDetalle(c)}
+                    style={{ borderBottom: i < filtered.length - 1 ? "1px solid #F1F5F9" : "none", cursor: "pointer" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#F7F8FA")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <td style={{ padding: "12px 14px", fontWeight: 700, color: "#006CFE", fontSize: 12 }}>{c.id}</td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "#0F172A" }}>{c.contact.name}</div>
+                      <div style={{ fontSize: 11, color: "#94A3B8" }}>{c.contact.email}</div>
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {c.requestedDestinations.map(d => (
+                          <span key={d} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 20, background: "#F1F5F9", color: "#475569" }}>{d}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569", whiteSpace: "nowrap" }}>{c.requestedDates}</td>
+                    <td style={{ padding: "12px 14px", textAlign: "center" }}>
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{c.pax}</span>
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                        <StatusBadge variant={STATUS_CONF[c.status].variant} label={STATUS_CONF[c.status].label} />
+                        {hours !== null && c.status === "pending" && (
+                          <span style={{ fontSize: 10, color: hours > 48 ? "#F13540" : "#F59E0B", display: "flex", alignItems: "center", gap: 3 }}>
+                            <Clock size={9} />{hours}h
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{assignedName.split(" ")[0]}</td>
+                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8", whiteSpace: "nowrap" }}>{fmtDate(c.createdAt)}</td>
+                    <td style={{ padding: "12px 14px" }} onClick={e => e.stopPropagation()}>
+                      <button onClick={() => setDetalle(c)}
+                        style={{ padding: "4px 10px", borderRadius: 6, border: "none", background: c.status === "pending" ? "#006CFE" : "#F1F5F9", color: c.status === "pending" ? "#FFFFFF" : "#475569", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
+                        {c.status === "pending" ? "Responder" : "Ver"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -245,9 +245,9 @@ export interface PaymentLink {
 
 export interface Quote {
   id: string;
-  contact: { name?: string; email?: string; phone?: string };
-  requestedDestinationIds: string[];
-  requestedDates: string[];
+  contact: { name?: string; email?: string; phone?: string; country?: string };
+  requestedDestinations: string[];
+  requestedDates: string;
   pax: number;
   approximateBudget?: number;
   message?: string;
@@ -259,6 +259,7 @@ export interface Quote {
   staffNotes?: string;
   respondedAt?: string;
   createdAt?: string;
+  communications?: { date: string; type: string; text: string }[];
 }
 
 // ── Customer ───────────────────────────────────────────
@@ -295,8 +296,8 @@ export interface CmsUser {
   role: UserRole;
   operatorId?: string;
   permissions: string[];
-  lastLogin: string;
-  status: "active" | "inactive";
+  lastLogin: string | null;
+  status: "active" | "inactive" | "invited";
 }
 
 // ── MediaAsset ─────────────────────────────────────────
@@ -340,6 +341,13 @@ export interface FAQ {
   category: string;
   order: number;
   status: "published" | "draft";
+}
+
+export interface FaqCategory {
+  id: string;
+  name: string;
+  icon: string;
+  items: FAQ[];
 }
 
 // ── Page ───────────────────────────────────────────────
@@ -395,8 +403,8 @@ export interface AuditLog {
   action: string;
   entity: string;
   entityId: string;
-  before?: unknown;
-  after?: unknown;
+  before?: Record<string, unknown> | null;
+  after?: Record<string, unknown> | null;
   timestamp: string;
   userAgent?: string;
 }

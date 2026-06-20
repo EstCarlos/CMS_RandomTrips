@@ -3,57 +3,18 @@ import { Plus, ChevronDown, ChevronRight, Edit2, Trash2, X, GripVertical } from 
 import { StatusBadge } from "../ui/StatusBadge";
 import { BilingualField, FormField } from "../ui/FormField";
 import { Btn } from "../ui/Modal";
-import type { Bilingual } from "../../data/types";
-
-/* ── Types & mock ───────────────────────────────────────── */
-interface FAQItem {
-  id: string;
-  question: Bilingual;
-  answer: Bilingual;
-  status: "published" | "draft";
-  order: number;
-}
-interface FAQCategory {
-  id: string;
-  name: string;
-  icon: string;
-  items: FAQItem[];
-}
-
-const mockFAQ: FAQCategory[] = [
-  {
-    id: "C-1", name: "Reservas y pagos", icon: "💳",
-    items: [
-      { id: "F-001", question: { es: "¿Cómo puedo reservar un tour?", en: "How can I book a tour?" }, answer: { es: "Puedes reservar directamente en nuestra web, por WhatsApp o enviando un formulario de cotización. Aceptamos tarjeta de crédito, PayPal y transferencia bancaria.", en: "You can book directly on our website, via WhatsApp or by submitting a quote form. We accept credit cards, PayPal and bank transfer." }, status: "published", order: 1 },
-      { id: "F-002", question: { es: "¿Qué depósito se requiere?", en: "What deposit is required?" }, answer: { es: "Para confirmar la reserva se requiere un depósito del 25% del total. El saldo restante se paga 48h antes del tour.", en: "A 25% deposit of the total is required to confirm the reservation. The remaining balance is paid 48h before the tour." }, status: "published", order: 2 },
-      { id: "F-003", question: { es: "¿Cuál es su política de cancelación?", en: "What is your cancellation policy?" }, answer: { es: "Cancelaciones con más de 72h de antelación: reembolso completo. Entre 48-72h: 50%. Menos de 48h: sin reembolso.", en: "Cancellations more than 72h in advance: full refund. Between 48-72h: 50%. Less than 48h: no refund." }, status: "published", order: 3 },
-    ],
-  },
-  {
-    id: "C-2", name: "Sobre los tours", icon: "🎒",
-    items: [
-      { id: "F-004", question: { es: "¿Qué debo llevar al tour?", en: "What should I bring to the tour?" }, answer: { es: "Ropa cómoda, protector solar biodegradable, traje de baño, toalla, identificación y efectivo para propinas y souvenirs.", en: "Comfortable clothing, biodegradable sunscreen, swimsuit, towel, ID and cash for tips and souvenirs." }, status: "published", order: 1 },
-      { id: "F-005", question: { es: "¿Los guías hablan inglés?", en: "Do the guides speak English?" }, answer: { es: "Sí, todos nuestros guías son bilingües (español/inglés). Consulta disponibilidad de guías en francés, alemán y portugués.", en: "Yes, all our guides are bilingual (Spanish/English). Check availability of guides in French, German and Portuguese." }, status: "published", order: 2 },
-      { id: "F-006", question: { es: "¿Los tours incluyen traslado?", en: "Do tours include transfer?" }, answer: { es: "La mayoría de nuestros tours incluyen pickup y dropoff en hoteles del área. Consulta el detalle de cada tour para confirmarlo.", en: "Most of our tours include pickup and dropoff at hotels in the area. Check each tour's details to confirm." }, status: "draft", order: 3 },
-    ],
-  },
-  {
-    id: "C-3", name: "Grupos y empresas", icon: "👥",
-    items: [
-      { id: "F-007", question: { es: "¿Hacen tours privados para grupos?", en: "Do you offer private group tours?" }, answer: { es: "Sí, organizamos tours privados para grupos desde 2 hasta 50 personas. Solicita una cotización personalizada.", en: "Yes, we organize private tours for groups from 2 to 50 people. Request a personalized quote." }, status: "published", order: 1 },
-    ],
-  },
-];
+import type { FAQ, FaqCategory, Bilingual } from "../../data/types";
+import { FAQS } from "../../data/realData";
 
 /* ── Inline editor (drawer) ─────────────────────────────── */
-function FAQEditor({ item, onSave, onClose }: { item: FAQItem | null; onSave: (i: FAQItem) => void; onClose: () => void }) {
+function FAQEditor({ item, onSave, onClose }: { item: FAQ | null; onSave: (i: FAQ) => void; onClose: () => void }) {
   const isNew = !item;
   const [question, setQuestion] = useState<Bilingual>(item?.question ?? { es: "", en: "" });
   const [answer, setAnswer]     = useState<Bilingual>(item?.answer   ?? { es: "", en: "" });
   const [status, setStatus]     = useState<"published" | "draft">(item?.status ?? "draft");
 
   const save = () => {
-    onSave({ id: item?.id || `F-${Date.now()}`, question, answer, status, order: item?.order ?? 99 });
+    onSave({ id: item?.id || `F-${Date.now()}`, question, answer, status, order: item?.order ?? 99, category: item?.category ?? "" });
     onClose();
   };
 
@@ -99,18 +60,19 @@ function FAQEditor({ item, onSave, onClose }: { item: FAQItem | null; onSave: (i
 
 /* ── Main ───────────────────────────────────────────────── */
 export function FAQ() {
-  const [categories, setCategories] = useState(mockFAQ);
+  const [categories, setCategories] = useState<FaqCategory[]>(FAQS);
   const [openCats, setOpenCats]     = useState<Set<string>>(new Set(["C-1"]));
-  const [editing, setEditing]       = useState<{ catId: string; item: FAQItem | null } | null>(null);
+  const [editing, setEditing]       = useState<{ catId: string; item: FAQ | null } | null>(null);
 
   const toggleCat = (id: string) => { const n = new Set(openCats); n.has(id) ? n.delete(id) : n.add(id); setOpenCats(n); };
 
-  const handleSave = (catId: string, item: FAQItem) => {
+  const handleSave = (catId: string, item: FAQ) => {
+    const saved = { ...item, category: catId };
     setCategories(cats => cats.map(c => c.id !== catId ? c : {
       ...c,
-      items: item.id && c.items.some(i => i.id === item.id)
-        ? c.items.map(i => i.id === item.id ? item : i)
-        : [...c.items, item],
+      items: saved.id && c.items.some(i => i.id === saved.id)
+        ? c.items.map(i => i.id === saved.id ? saved : i)
+        : [...c.items, saved],
     }));
   };
 
