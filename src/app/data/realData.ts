@@ -7,7 +7,7 @@ import type {
   SiteConfig, ServiceCatalogItem, Destination, Experience,
   MediaAsset, Tour, Availability, Page, Customer, Booking,
   Payment, PaymentLink, Testimonial, BookingStatus, PaymentLinkStatus,
-  LanguageCode, Operator,
+  LanguageCode, Operator, Quote, CmsUser, AuditLog, FaqCategory,
 } from "./types";
 
 /* ── SiteConfig ──────────────────────────────────────── */
@@ -1142,6 +1142,134 @@ export const getTourPriceDisplay = (tour: Tour): string => {
     return `RD$ ${pm.totalPrice.toLocaleString()} grupo`;
   return "—";
 };
+
+/* ── Quotes ──────────────────────────────────────────── */
+export const QUOTES: Quote[] = [
+  {
+    id: "qt-001",
+    contact: { name: "María González", email: "maria.gonzalez@gmail.com", phone: "+1 (305) 555-0142", country: "US" },
+    requestedDestinations: ["Samaná", "Bahía de las Águilas"],
+    requestedDates: "15-22 julio 2026",
+    pax: 4,
+    approximateBudget: 60000,
+    message: "Somos una familia de 4 (2 adultos, 2 niños de 10 y 13 años). Nos gustaría un paquete que combine playa y naturaleza. Preferimos hospedaje tipo glamping o eco-lodge.",
+    status: "pending",
+    currency: "DOP",
+    staffNotes: "",
+    createdAt: "2026-06-17T14:32:00Z",
+  },
+  {
+    id: "qt-002",
+    contact: { name: "James Mitchell", email: "j.mitchell@outlook.com", phone: "+44 7911 123456", country: "GB" },
+    requestedDestinations: ["Constanza", "Jarabacoa", "Santiago"],
+    requestedDates: "Agosto 2026, fechas flexibles",
+    pax: 8,
+    message: "Group of friends looking for an adventure trip in the mountains. We're into hiking, rafting, and anything outdoors. Budget is flexible for the right experience.",
+    status: "sent",
+    proposedPrice: 180000,
+    currency: "DOP",
+    paymentLinkId: "pl-qt-002",
+    assignedToUserId: "usr-carlos",
+    staffNotes: "Propuesto paquete montaña 5 días. Esperando respuesta. Se les ofreció incluir Pico Duarte.",
+    createdAt: "2026-06-10T09:15:00Z",
+    respondedAt: "2026-06-11T16:40:00Z",
+  },
+  {
+    id: "qt-003",
+    contact: { name: "Laura Fernández", email: "laura.f@empresa.com.do", phone: "+1 (809) 555-0198", country: "DO" },
+    requestedDestinations: ["Punta Cana", "Bayahibe"],
+    requestedDates: "20-21 septiembre 2026",
+    pax: 15,
+    approximateBudget: 250000,
+    message: "Estamos organizando un teambuilding para 15 personas de nuestra empresa. Necesitamos actividades en grupo, almuerzo incluido, y transporte desde Santo Domingo.",
+    status: "accepted",
+    proposedPrice: 225000,
+    currency: "DOP",
+    paymentLinkId: "pl-qt-003",
+    assignedToUserId: "usr-carlos",
+    staffNotes: "Confirmado. Booking creado: BK-007. Coordinar transporte con Caribe Adventures.",
+    createdAt: "2026-06-05T11:00:00Z",
+    respondedAt: "2026-06-06T10:20:00Z",
+  },
+  {
+    id: "qt-004",
+    contact: { name: "Sophie Dupont", email: "sophie.d@free.fr", phone: "+33 6 12 34 56 78", country: "FR" },
+    requestedDestinations: ["Samaná"],
+    requestedDates: "Diciembre 2026",
+    pax: 2,
+    message: "Honeymoon trip. Looking for something romantic and exclusive — private beach, sunset, good food. 3-4 days ideally.",
+    status: "rejected",
+    proposedPrice: 95000,
+    currency: "DOP",
+    assignedToUserId: "usr-staff1",
+    staffNotes: "Cotización enviada pero el presupuesto les pareció alto. Ofrecí opción más económica pero prefirieron otro proveedor.",
+    createdAt: "2026-05-28T16:45:00Z",
+    respondedAt: "2026-05-29T14:10:00Z",
+  },
+  {
+    id: "qt-005",
+    contact: { name: "Roberto Almánzar", email: "ralmanzar@hotmail.com", phone: "+1 (849) 555-0321", country: "DO" },
+    requestedDestinations: ["Valle Nuevo", "Constanza"],
+    requestedDates: "Primer fin de semana de agosto",
+    pax: 6,
+    approximateBudget: 30000,
+    message: "Queremos ir de camping a Valle Nuevo. ¿Tienen paquete con equipo de camping incluido?",
+    status: "pending",
+    currency: "DOP",
+    staffNotes: "",
+    createdAt: "2026-06-18T20:10:00Z",
+  },
+];
+
+/* ── CMS Users ───────────────────────────────────────── */
+export const CMS_USERS: CmsUser[] = [
+  { id: "usr-carlos",    email: "carlos@randomtrips.co",    name: "Carlos Soto",         role: "admin",    permissions: [], lastLogin: "2026-06-19T08:30:00Z", status: "active"   },
+  { id: "usr-socio",     email: "socio@randomtrips.co",     name: "Socio Random Trips",  role: "admin",    permissions: [], lastLogin: "2026-06-18T22:15:00Z", status: "active"   },
+  { id: "usr-staff1",    email: "ana@randomtrips.co",       name: "Ana Pérez",           role: "staff",    permissions: [], lastLogin: "2026-06-17T14:00:00Z", status: "active"   },
+  { id: "usr-op-caribe", email: "ops@caribead.do",          name: "Luis Reyes",          role: "operator", operatorId: "op-caribe-adventures", permissions: [], lastLogin: "2026-06-15T10:45:00Z", status: "active"   },
+  { id: "usr-op-montana",email: "info@montanaverde.do",     name: "Pedro Martínez",      role: "operator", operatorId: "op-montana-verde",     permissions: [], lastLogin: null,                   status: "inactive" },
+];
+
+/* ── Audit Logs ──────────────────────────────────────── */
+export const AUDIT_LOGS: AuditLog[] = [
+  { id: "log-001", timestamp: "2026-06-19T08:32:15Z", actorId: "usr-carlos",    action: "update",  entity: "tour",         entityId: "tour-playa-fronton",           before: { "pricingModel.pricePerPerson": 3200 }, after: { "pricingModel.pricePerPerson": 3500 } },
+  { id: "log-002", timestamp: "2026-06-19T07:45:00Z", actorId: "usr-carlos",    action: "create",  entity: "tour",         entityId: "tour-travelhood-plan-1",        before: null, after: { title: "TravelHood Plan 1", type: "multiDay" } },
+  { id: "log-003", timestamp: "2026-06-18T22:10:00Z", actorId: "usr-socio",     action: "update",  entity: "availability", entityId: "tour-playa-fronton",           before: { date: "2026-07-12", status: "open" }, after: { date: "2026-07-12", status: "blocked" } },
+  { id: "log-004", timestamp: "2026-06-18T16:30:00Z", actorId: "usr-staff1",    action: "create",  entity: "booking",      entityId: "BK-003",                       before: null, after: { tourId: "tour-playa-fronton", totalPax: 3, status: "depositPaid" } },
+  { id: "log-005", timestamp: "2026-06-18T14:20:00Z", actorId: "usr-carlos",    action: "update",  entity: "siteConfig",   entityId: "exchangeRates",                before: { USD: 0.0165, EUR: 0.0150 }, after: { USD: 0.0167, EUR: 0.0155 } },
+  { id: "log-006", timestamp: "2026-06-17T11:00:00Z", actorId: "usr-staff1",    action: "update",  entity: "quote",        entityId: "qt-002",                       before: { status: "pending" }, after: { status: "sent", proposedPrice: 180000 } },
+  { id: "log-007", timestamp: "2026-06-16T09:15:00Z", actorId: "usr-op-caribe", action: "update",  entity: "availability", entityId: "tour-bayahibe-isla-saona",     before: { date: "2026-07-20", totalSeats: 15 }, after: { date: "2026-07-20", totalSeats: 20 } },
+  { id: "log-008", timestamp: "2026-06-15T18:45:00Z", actorId: "usr-carlos",    action: "publish", entity: "tour",         entityId: "tour-bahia-aguilas-premium",   before: { status: "draft" }, after: { status: "published" } },
+];
+
+/* ── FAQs ────────────────────────────────────────────── */
+export const FAQS: FaqCategory[] = [
+  {
+    id: "C-1", name: "Reservas y pagos", icon: "💳",
+    items: [
+      { id: "F-001", category: "C-1", order: 1, status: "published", question: { es: "¿Cómo puedo reservar un tour?", en: "How can I book a tour?" }, answer: { es: "Puedes reservar directamente en nuestra web, por WhatsApp o enviando un formulario de cotización. Aceptamos tarjeta de crédito, PayPal y transferencia bancaria.", en: "You can book directly on our website, via WhatsApp or by submitting a quote form. We accept credit cards, PayPal and bank transfer." } },
+      { id: "F-002", category: "C-1", order: 2, status: "published", question: { es: "¿Qué depósito se requiere?", en: "What deposit is required?" }, answer: { es: "Para confirmar la reserva se requiere un depósito del 25% del total. El saldo restante se paga 48h antes del tour.", en: "A 25% deposit of the total is required to confirm the reservation. The remaining balance is paid 48h before the tour." } },
+      { id: "F-003", category: "C-1", order: 3, status: "published", question: { es: "¿Cuál es su política de cancelación?", en: "What is your cancellation policy?" }, answer: { es: "Cancelaciones con más de 72h de antelación: reembolso completo. Entre 48-72h: 50%. Menos de 48h: sin reembolso.", en: "Cancellations more than 72h in advance: full refund. Between 48-72h: 50%. Less than 48h: no refund." } },
+    ],
+  },
+  {
+    id: "C-2", name: "Sobre los tours", icon: "🎒",
+    items: [
+      { id: "F-004", category: "C-2", order: 1, status: "published", question: { es: "¿Qué debo llevar al tour?", en: "What should I bring to the tour?" }, answer: { es: "Ropa cómoda, protector solar biodegradable, traje de baño, toalla, identificación y efectivo para propinas y souvenirs.", en: "Comfortable clothing, biodegradable sunscreen, swimsuit, towel, ID and cash for tips and souvenirs." } },
+      { id: "F-005", category: "C-2", order: 2, status: "published", question: { es: "¿Los guías hablan inglés?", en: "Do the guides speak English?" }, answer: { es: "Sí, todos nuestros guías son bilingües (español/inglés). Consulta disponibilidad de guías en francés, alemán y portugués.", en: "Yes, all our guides are bilingual (Spanish/English). Check availability of guides in French, German and Portuguese." } },
+      { id: "F-006", category: "C-2", order: 3, status: "draft",     question: { es: "¿Los tours incluyen traslado?", en: "Do tours include transfer?" }, answer: { es: "La mayoría de nuestros tours incluyen pickup y dropoff en hoteles del área. Consulta el detalle de cada tour para confirmarlo.", en: "Most of our tours include pickup and dropoff at hotels in the area. Check each tour's details to confirm." } },
+    ],
+  },
+  {
+    id: "C-3", name: "Grupos y empresas", icon: "👥",
+    items: [
+      { id: "F-007", category: "C-3", order: 1, status: "published", question: { es: "¿Hacen tours privados para grupos?", en: "Do you offer private group tours?" }, answer: { es: "Sí, organizamos tours privados para grupos desde 2 hasta 50 personas. Solicita una cotización personalizada.", en: "Yes, we organize private tours for groups from 2 to 50 people. Request a personalized quote." } },
+    ],
+  },
+];
+
+export const findQuote = (id: string) => QUOTES.find(q => q.id === id);
+export const findUser  = (id: string) => CMS_USERS.find(u => u.id === id);
 
 /* ── Derived aggregates (computed once) ──────────────── */
 export const TOTAL_COBRADO     = BOOKINGS.reduce((s, b) => s + b.depositPaid, 0);
