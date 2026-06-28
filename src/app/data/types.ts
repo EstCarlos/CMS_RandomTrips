@@ -284,7 +284,7 @@ export interface Operator {
   name: string;
   contact?: { name?: string; phone?: string; email?: string; whatsapp?: string | null };
   assignedTourIds: string[];
-  status: "active" | "inactive"; // TODO: confirmar naming
+  status: "active" | "inactive" | "seasonal" | "review";
 }
 
 // ── User (CMS) ─────────────────────────────────────────

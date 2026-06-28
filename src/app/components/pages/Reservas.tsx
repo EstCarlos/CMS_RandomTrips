@@ -6,7 +6,7 @@ import { ReservaDetalle } from "./ReservaDetalle";
 import {
   BOOKINGS, CUSTOMERS, TOURS_DATA, PAYMENT_LINKS,
   formatDOP, dopToUSD, dopToEUR,
-  SITE_CONFIG, findDestination,
+  SITE_CONFIG,
 } from "../../data/realData";
 
 /* ── Lookups ─────────────────────────────────────────────── */
@@ -52,30 +52,6 @@ function KPIBar() {
   );
 }
 
-/* ── Build ReservaDetalle-compatible object ──────────────── */
-function buildDetalleReserva(bkId: string) {
-  const bk   = BOOKINGS.find(b => b.id === bkId)!;
-  const cust = custMap[bk.customerId];
-  const tour = tourMap[bk.tourId];
-  const link = PAYMENT_LINKS.find(l => l.bookingId === bk.id);
-  return {
-    id: bk.id,
-    customerName: cust.name,
-    email: cust.email,
-    phone: cust.phone,
-    country: cust.country,
-    tour: tour.title.es,
-    destination: tour.destinationIds.map(id => findDestination(id)?.name.es ?? id).join(", "),
-    tourDate: bk.displayDate ?? "",
-    creationDate: "Jun 2026",
-    pax: bk.totalPax,
-    total: bk.totalPrice,
-    paid: bk.depositPaid,
-    status: bk.status === "fullyPaid" ? "confirmed" : bk.status === "balanceOverdue" ? "pending" : "partial",
-    operator: "Random Trips",
-    notes: link ? `Link de pago: ${link.invoiceId} · Vence ${link.expiresAt} · Estado: ${link.status}` : "",
-  };
-}
 
 /* ── Main ────────────────────────────────────────────────── */
 export function Reservas() {
@@ -85,8 +61,9 @@ export function Reservas() {
   const [detalleId, setDetalleId] = useState<string | null>(null);
 
   if (detalleId) {
-    const obj = buildDetalleReserva(detalleId);
-    return <ReservaDetalle reserva={obj} onBack={() => setDetalleId(null)} />;
+    const bk   = BOOKINGS.find(b => b.id === detalleId)!;
+    const cust = custMap[bk.customerId];
+    return <ReservaDetalle booking={bk} customer={cust} onBack={() => setDetalleId(null)} />;
   }
 
   /* Filter */
