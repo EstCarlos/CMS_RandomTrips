@@ -1142,7 +1142,9 @@ function TabSEO({ tour, onChange }: { tour: Tour; onChange: (k: keyof Tour, v: u
 /* ══════════════════════════════════════════════════════════
    MAIN TourEditor
 ══════════════════════════════════════════════════════════ */
-export function TourEditor({ onBack, tourId }: { onBack: () => void; tourId?: string }) {
+const IMPORTANT_TABS = ["info", "pricing", "itinerario"];
+
+export function TourEditor({ onBack, tourId, isPartnerView = false }: { onBack: () => void; tourId?: string; isPartnerView?: boolean }) {
   const source  = TOURS_DATA.find(t => t.id === tourId) ?? TOURS_DATA[0];
   const [tour, setTour] = useState<Tour>({ ...source });
   const [activeTab, setActiveTab] = useState("info");
@@ -1212,6 +1214,13 @@ export function TourEditor({ onBack, tourId }: { onBack: () => void; tourId?: st
               style={{ padding: "8px 16px", border: "none", borderBottom: `2px solid ${isActive ? "#006CFE" : "transparent"}`, background: "transparent", fontSize: 13, fontWeight: isActive ? 600 : 400, color: isActive ? "#006CFE" : "#475569", cursor: "pointer", whiteSpace: "nowrap" }}>
               <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, borderRadius: "50%", background: isActive ? "#006CFE" : "#E5E7EB", color: isActive ? "#FFFFFF" : "#94A3B8", fontSize: 10, fontWeight: 700, marginRight: 6 }}>{i + 1}</span>
               {t.label}
+              {isPartnerView && IMPORTANT_TABS.includes(t.id) && (
+                <span style={{
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: isActive ? "#FFFFFF" : "#006CFE",
+                  display: "inline-block", marginLeft: 5, verticalAlign: "middle",
+                }} />
+              )}
             </button>
           );
         })}

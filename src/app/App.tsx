@@ -65,6 +65,13 @@ const PAGE_META: Record<string, { title: string; breadcrumbs?: string[] }> = {
 };
 
 /* ── Role switcher (demo only) ─────────────────────────── */
+const ROLE_LABELS: Record<UserRole, string> = {
+  admin:    "Admin",
+  staff:    "Staff",
+  operator: "Operador",
+  partner:  "Socio",
+};
+
 function RoleSwitcher({ role, onSwitch }: { role: UserRole; onSwitch: (r: UserRole) => void }) {
   return (
     <div style={{
@@ -77,15 +84,15 @@ function RoleSwitcher({ role, onSwitch }: { role: UserRole; onSwitch: (r: UserRo
         Vista demo
       </div>
       <div style={{ display: "flex", gap: 4 }}>
-        {(["admin", "staff", "operator"] as UserRole[]).map(r => (
+        {(["admin", "staff", "operator", "partner"] as UserRole[]).map(r => (
           <button key={r} onClick={() => onSwitch(r)} style={{
             padding: "4px 8px", borderRadius: 4, border: "none",
             background: role === r ? "#006CFE" : "#F1F5F9",
             color: role === r ? "#FFFFFF" : "#475569",
             fontSize: 11, fontWeight: role === r ? 600 : 400,
-            cursor: "pointer", textTransform: "capitalize",
+            cursor: "pointer",
           }}>
-            {r}
+            {ROLE_LABELS[r]}
           </button>
         ))}
       </div>
@@ -102,6 +109,19 @@ function PageContent({
   onNavigate: (p: Page) => void;
   onEditTour: (id: string) => void;
 }) {
+  /* Partner-specific overrides */
+  if (userRole === "partner") {
+    const allowed = ["cotizaciones", "destinos", "experiencias", "tours"];
+    const safePage = allowed.includes(page) ? page : "cotizaciones";
+    switch (safePage) {
+      case "cotizaciones":   return <Cotizaciones isPartnerView />;
+      case "destinos":       return <Destinos />;
+      case "experiencias":   return <Experiencias />;
+      case "tours":          return <Tours onEditTour={onEditTour} />;
+      default:               return <Cotizaciones isPartnerView />;
+    }
+  }
+
   /* Operator-specific overrides */
   if (userRole === "operator") {
     switch (page) {
@@ -167,7 +187,7 @@ export default function App() {
 
   const handleRoleSwitch = (role: UserRole) => {
     setUserRole(role);
-    setCurrentPage("dashboard");
+    setCurrentPage(role === "partner" ? "cotizaciones" : "dashboard");
     setEditingTourId(null);
   };
 
@@ -179,7 +199,7 @@ export default function App() {
         currentPage={isEditorOpen ? "tours" : currentPage as Page}
         onNavigate={handleNavigate}
         userRole={userRole}
-        userName={userRole === "operator" ? "Carlos Domínguez" : "Alejandra Torres"}
+        userName={userRole === "operator" || userRole === "partner" ? "Carlos Domínguez" : "Alejandra Torres"}
       />
 
       <div style={{ marginLeft: 240, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -187,14 +207,14 @@ export default function App() {
           <TopBar
             title={meta.title}
             breadcrumbs={meta.breadcrumbs}
-            userName={userRole === "operator" ? "Carlos Domínguez" : "Alejandra Torres"}
-            userRole={userRole === "admin" ? "Administrador" : userRole === "staff" ? "Staff" : "Operador"}
+            userName={userRole === "operator" || userRole === "partner" ? "Carlos Domínguez" : "Alejandra Torres"}
+            userRole={userRole === "admin" ? "Administrador" : userRole === "staff" ? "Staff" : userRole === "operator" ? "Operador" : "Socio"}
           />
         )}
 
         <main style={{ flex: 1, padding: isEditorOpen ? "20px 28px 0" : "24px 28px", maxWidth: 1440 }}>
           {isEditorOpen ? (
-            <TourEditor onBack={() => { setCurrentPage("tours"); setEditingTourId(null); }} tourId={editingTourId ?? undefined} />
+            <TourEditor onBack={() => { setCurrentPage("tours"); setEditingTourId(null); }} tourId={editingTourId ?? undefined} isPartnerView={userRole === "partner"} />
           ) : (
             <PageContent
               page={currentPage}

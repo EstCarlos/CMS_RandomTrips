@@ -5,7 +5,7 @@ import {
   Star, FileText, Settings, UserCog, ScrollText, ChevronDown, LogOut, User
 } from "lucide-react";
 
-export type UserRole = "admin" | "staff" | "operator";
+export type UserRole = "admin" | "staff" | "operator" | "partner";
 
 export type Page =
   | "dashboard"
@@ -89,9 +89,26 @@ const operatorNav: NavGroup[] = [
   }
 ];
 
+const partnerNav: NavGroup[] = [
+  {
+    label: "COTIZACIONES",
+    items: [
+      { id: "cotizaciones", label: "Cotizaciones", icon: <MessageSquare size={16} /> },
+    ]
+  },
+  {
+    label: "CATÁLOGO",
+    items: [
+      { id: "destinos",     label: "Destinos",     icon: <Map size={16} /> },
+      { id: "experiencias", label: "Experiencias", icon: <Sparkles size={16} /> },
+      { id: "tours",        label: "Tours",         icon: <Package size={16} /> },
+    ]
+  },
+];
+
 export function Sidebar({ currentPage, onNavigate, userRole, userName }: SidebarProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const nav = userRole === "operator" ? operatorNav : adminNav;
+  const nav = userRole === "operator" ? operatorNav : userRole === "partner" ? partnerNav : adminNav;
 
   return (
     <aside

@@ -218,10 +218,10 @@ function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) 
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                       }}
                     >
-                      <Send size={14} /> Enviar cotización + link de pago
+                      <Send size={14} /> Enviar cotización
                     </button>
                     <div style={{ fontSize: 11, color: "#94A3B8", textAlign: "center" }}>
-                      Se enviará email a <strong>{cot.contact.email}</strong> con la propuesta y un link de depósito del 25%.
+                      Se enviará email a <strong>{cot.contact.email}</strong> con la propuesta.
                     </div>
                   </div>
                 </>
@@ -235,7 +235,7 @@ function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) 
 }
 
 /* ── Main list ──────────────────────────────────────────── */
-export function Cotizaciones() {
+export function Cotizaciones({ isPartnerView = false }: { isPartnerView?: boolean }) {
   const [activeTab, setActiveTab] = useState<"pending" | "sent" | "accepted" | "rejected">("pending");
   const [search, setSearch] = useState("");
   const [detalle, setDetalle] = useState<Quote | null>(null);
@@ -267,6 +267,26 @@ export function Cotizaciones() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, sans-serif" }}>
+      {/* Partner welcome banner */}
+      {isPartnerView && (
+        <div style={{
+          background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: 8,
+          padding: "12px 16px",
+          display: "flex", alignItems: "flex-start", gap: 10,
+        }}>
+          <span style={{ fontSize: 20 }}>👋</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#1E40AF", marginBottom: 2 }}>
+              Bienvenido al CMS de Random Trips
+            </div>
+            <div style={{ fontSize: 12, color: "#3B82F6", lineHeight: 1.5 }}>
+              Aquí recibirás las solicitudes de cotización de los clientes.
+              Revisa cada una, completa el precio propuesto y envía tu respuesta.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Status tabs */}
       <div style={{ display: "flex", borderBottom: "1px solid #E5E7EB", gap: 0 }}>
         {tabDef.map(t => {
@@ -316,7 +336,24 @@ export function Cotizaciones() {
         </div>
       )}
 
+      {/* Empty state */}
+      {filtered.length === 0 && (
+        <div style={{
+          textAlign: "center", padding: "48px 20px",
+          background: "#F7F8FA", borderRadius: 8,
+        }}>
+          <div style={{ fontSize: 40, marginBottom: 8 }}>📭</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#0F172A", marginBottom: 4 }}>
+            No hay cotizaciones pendientes
+          </div>
+          <div style={{ fontSize: 13, color: "#64748B" }}>
+            Cuando un cliente solicite una cotización, aparecerá aquí.
+          </div>
+        </div>
+      )}
+
       {/* Table */}
+      {filtered.length > 0 && (
       <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
@@ -330,9 +367,7 @@ export function Cotizaciones() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
-                <tr><td colSpan={9} style={{ padding: "48px", textAlign: "center", color: "#94A3B8", fontSize: 13 }}>Sin cotizaciones en esta categoría</td></tr>
-              ) : filtered.map((c, i) => {
+              {filtered.map((c, i) => {
                 const hours = hoursAgo(c.createdAt);
                 const assignedName = findUser(c.assignedToUserId ?? "")?.name ?? "—";
                 return (
@@ -383,6 +418,7 @@ export function Cotizaciones() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }
