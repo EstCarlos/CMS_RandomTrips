@@ -2,59 +2,83 @@ import { useState } from "react";
 import {
   ArrowLeft, Link, XCircle, RefreshCw, CheckCircle2,
   Mail, User, Package, CreditCard, MessageSquare, Clock,
-  Check, AlertCircle, Send, ChevronDown,
+  Check, AlertCircle, Send,
 } from "lucide-react";
 import { StatusBadge } from "../ui/StatusBadge";
 import { Btn } from "../ui/Modal";
+import type { Booking, Customer, BookingStatus, PaymentType, PaymentStatus, PaymentLinkStatus } from "../../data/types";
+import { PAYMENTS, PAYMENT_LINKS, findTour, findOperator, findDestination, formatDOP } from "../../data/realData";
 
-/* ── Mock ───────────────────────────────────────────────── */
-interface Reserva {
-  id: string;
-  customerName: string;
-  email: string;
-  phone: string;
-  country: string;
-  tour: string;
-  destination: string;
-  tourDate: string;
-  creationDate: string;
-  pax: number;
-  total: number;
-  paid: number;
-  status: string;
-  operator: string;
-  notes: string;
-  customization?: string;
-}
-
-const statusConf: Record<string, { variant: "success" | "warning" | "danger" | "neutral" | "info"; label: string }> = {
-  confirmed: { variant: "success", label: "Confirmada"       },
-  pending:   { variant: "warning", label: "Pendiente pago"   },
-  partial:   { variant: "info",    label: "Pago parcial"     },
-  cancelled: { variant: "danger",  label: "Cancelada"        },
-  completed: { variant: "neutral", label: "Finalizada"       },
+/* ── Status configs ─────────────────────────────────────── */
+const statusConf: Record<BookingStatus, { variant: "success" | "warning" | "danger" | "neutral" | "info"; label: string }> = {
+  pendingPayment: { variant: "warning", label: "Pendiente pago" },
+  depositPaid:    { variant: "info",    label: "Depósito pagado" },
+  fullyPaid:      { variant: "success", label: "Pago completo"  },
+  balanceOverdue: { variant: "danger",  label: "Saldo vencido"  },
+  cancelled:      { variant: "danger",  label: "Cancelada"      },
+  completed:      { variant: "neutral", label: "Finalizada"     },
 };
 
-interface Props { reserva: Reserva; onBack: () => void; }
+const paymentTypeLabel: Record<PaymentType, string> = {
+  deposit: "Depósito",
+  balance: "Saldo",
+  refund:  "Reembolso",
+};
 
-export function ReservaDetalle({ reserva: r, onBack }: Props) {
-  const [nota, setNota] = useState(r.notes || "Confirmar traslado 72h antes con Caribe Tours. Cliente solicita silla de bebé para el bote.");
+const paymentStatusConf: Record<PaymentStatus, { variant: "success" | "warning" | "danger" | "info" | "neutral"; label: string }> = {
+  paid:     { variant: "success", label: "Confirmado"   },
+  pending:  { variant: "warning", label: "Pendiente"    },
+  failed:   { variant: "danger",  label: "Fallido"      },
+  refunded: { variant: "info",    label: "Reembolsado"  },
+};
+
+const linkStatusConf: Record<PaymentLinkStatus, { variant: "success" | "warning" | "danger" | "info" | "neutral"; label: string }> = {
+  paid:    { variant: "success", label: "Pagado"    },
+  pending: { variant: "warning", label: "Pendiente" },
+  sent:    { variant: "info",    label: "Enviado"   },
+  expired: { variant: "danger",  label: "Vencido"   },
+};
+
+/* ── Props ──────────────────────────────────────────────── */
+interface Props {
+  booking: Booking;
+  customer?: Customer;
+  onBack: () => void;
+}
+
+export function ReservaDetalle({ booking, customer, onBack }: Props) {
+  /* Derived fields */
+  const tour       = findTour(booking.tourId);
+  const operator   = findOperator(booking.operatorId ?? "");
+  const payments   = PAYMENTS.filter(p => p.bookingId === booking.id);
+  const links      = PAYMENT_LINKS.filter(l => l.bookingId === booking.id);
+
+  const customerName  = customer?.name    ?? booking.customerId;
+  const email         = customer?.email   ?? "—";
+  const phone         = customer?.phone   ?? "—";
+  const country       = customer?.country ?? "—";
+  const tourName      = tour?.title.es    ?? booking.tourId;
+  const destination   = tour?.destinationIds.map(id => findDestination(id)?.name.es ?? id).join(", ") ?? "—";
+  const tourDate      = booking.displayDate ?? booking.date;
+  const operatorName  = operator?.name    ?? booking.operatorId ?? "—";
+
+  const total      = booking.totalPrice;
+  const paid       = booking.depositPaid;
+  const saldo      = booking.outstandingBalance;
+  const pctPagado  = total > 0 ? (paid / total) * 100 : 0;
+
+  const st = statusConf[booking.status];
+
+  const [nota, setNota] = useState(booking.internalNotes ?? "");
   const [notaLog] = useState([
     { date: "12 Jun 2026 09:14", author: "Alejandra Torres", text: "Reserva creada desde web pública." },
-    { date: "12 Jun 2026 11:32", author: "Alejandra Torres", text: "Depósito 25% recibido por Stripe." },
-    { date: "14 Jun 2026 15:10", author: "Carlos (Operador)", text: "Confirmada disponibilidad para esa fecha." },
+    { date: "12 Jun 2026 11:32", author: "Alejandra Torres", text: "Depósito recibido." },
   ]);
   const [emailLog] = useState([
-    { date: "12 Jun 2026 09:15", type: "Confirmación de reserva",      status: "entregado" },
-    { date: "12 Jun 2026 11:33", type: "Confirmación de depósito",      status: "entregado" },
-    { date: "15 Jun 2026 08:00", type: "Recordatorio de saldo (auto)",  status: "pendiente" },
+    { date: "12 Jun 2026 09:15", type: "Confirmación de reserva",     status: "entregado" },
+    { date: "12 Jun 2026 11:33", type: "Confirmación de depósito",     status: "entregado" },
+    { date: "15 Jun 2026 08:00", type: "Recordatorio de saldo (auto)", status: "pendiente" },
   ]);
-  const [payLinks] = useState([
-    { id: "LNK-441", amount: "RD$ 53,100", status: "pendiente", createdAt: "12 Jun 2026", expiresAt: "19 Jun 2026" },
-  ]);
-
-  const saldo = r.total - r.paid;
-  const pctPagado = (r.paid / r.total) * 100;
 
   return (
     <div style={{ fontFamily: "Inter, sans-serif", display: "flex", flexDirection: "column", gap: 0 }}>
@@ -65,10 +89,10 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div>
-            <span style={{ fontSize: 24, fontWeight: 800, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{r.id}</span>
-            <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>Creada el {r.creationDate}</span>
+            <span style={{ fontSize: 24, fontWeight: 800, color: "#0F172A", fontVariantNumeric: "tabular-nums" }}>{booking.id}</span>
+            <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>Fecha: {tourDate}</span>
           </div>
-          <StatusBadge variant={statusConf[r.status].variant} label={statusConf[r.status].label} />
+          <StatusBadge variant={st.variant} label={st.label} />
           <div style={{ display: "flex", gap: 8, marginLeft: "auto", flexWrap: "wrap" }}>
             <Btn variant="primary" size="sm"><Link size={13} /> Generar link de pago saldo</Btn>
             <Btn variant="secondary" size="sm"><Mail size={13} /> Enviar email manual</Btn>
@@ -94,10 +118,10 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
             <div style={{ padding: "14px 16px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 {[
-                  { label: "Nombre",    value: r.customerName },
-                  { label: "Email",     value: r.email        },
-                  { label: "Teléfono", value: r.phone        },
-                  { label: "País",      value: r.country      },
+                  { label: "Nombre",    value: customerName },
+                  { label: "Email",     value: email        },
+                  { label: "Teléfono", value: phone        },
+                  { label: "País",      value: country      },
                 ].map(f => (
                   <div key={f.label}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{f.label}</div>
@@ -119,25 +143,19 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
             </div>
             <div style={{ padding: "14px 16px" }}>
               <div style={{ display: "flex", gap: 14 }}>
-                <div style={{ width: 60, height: 60, borderRadius: 6, background: "linear-gradient(135deg, #BAE6FD, #7DD3FC)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontSize: 24 }}>🏖️</span>
+                <div style={{ width: 60, height: 60, borderRadius: 6, background: tour?.heroBg ?? "linear-gradient(135deg, #BAE6FD, #7DD3FC)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ fontSize: 24 }}>{tour?.emoji ?? "🏖️"}</span>
                 </div>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{r.tour}</div>
-                  <div style={{ fontSize: 12, color: "#475569" }}>{r.destination}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>{tourName}</div>
+                  <div style={{ fontSize: 12, color: "#475569" }}>{destination}</div>
                   <div style={{ display: "flex", gap: 12, marginTop: 6, fontSize: 12, color: "#94A3B8" }}>
-                    <span>📅 {r.tourDate}</span>
-                    <span>👥 {r.pax} pax</span>
-                    <span>🏢 {r.operator}</span>
+                    <span>📅 {tourDate}</span>
+                    <span>👥 {booking.totalPax} pax</span>
+                    <span>🏢 {operatorName}</span>
                   </div>
                 </div>
               </div>
-              {r.customization && (
-                <div style={{ marginTop: 12, padding: "10px 12px", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: 6 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: "#7C3AED", marginBottom: 4 }}>Personalización elegida</div>
-                  <div style={{ fontSize: 12, color: "#475569" }}>{r.customization}</div>
-                </div>
-              )}
             </div>
           </section>
 
@@ -156,8 +174,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                     <Check size={14} color="#FFFFFF" />
                   </div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: "#16A34A", textAlign: "center" }}>Depósito</div>
-                  <div style={{ fontSize: 10, color: "#94A3B8" }}>RD$ {(r.paid).toLocaleString()}</div>
-                  <div style={{ fontSize: 10, color: "#94A3B8" }}>12 Jun</div>
+                  <div style={{ fontSize: 10, color: "#94A3B8" }}>{formatDOP(paid)}</div>
                 </div>
                 {/* Connector */}
                 <div style={{ flex: 1, height: 2, background: saldo === 0 ? "#16A34A" : "#E5E7EB", marginBottom: 32 }} />
@@ -172,7 +189,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                     {saldo === 0 ? <Check size={14} color="#FFFFFF" /> : <AlertCircle size={14} color="#94A3B8" />}
                   </div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: saldo > 0 ? "#92400E" : "#16A34A", textAlign: "center" }}>Saldo</div>
-                  <div style={{ fontSize: 10, color: saldo > 0 ? "#F59E0B" : "#94A3B8" }}>RD$ {saldo.toLocaleString()}</div>
+                  <div style={{ fontSize: 10, color: saldo > 0 ? "#F59E0B" : "#94A3B8" }}>{formatDOP(saldo)}</div>
                   <div style={{ fontSize: 10, color: "#94A3B8" }}>{saldo > 0 ? "Pendiente" : "Pagado"}</div>
                 </div>
                 {/* Connector */}
@@ -190,8 +207,8 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
               {/* Progress bar */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#475569", marginBottom: 4 }}>
-                  <span>Pagado: RD$ {r.paid.toLocaleString()}</span>
-                  <span>Total: RD$ {r.total.toLocaleString()}</span>
+                  <span>Pagado: {formatDOP(paid)}</span>
+                  <span>Total: {formatDOP(total)}</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: "#F1F5F9", overflow: "hidden" }}>
                   <div style={{ height: "100%", borderRadius: 3, background: "#16A34A", width: `${pctPagado}%` }} />
@@ -210,13 +227,22 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td style={{ padding: "8px 10px", color: "#475569" }}>12 Jun 2026</td>
-                      <td style={{ padding: "8px 10px", color: "#0F172A" }}>Depósito 25%</td>
-                      <td style={{ padding: "8px 10px", color: "#475569" }}>Stripe · Visa ••4242</td>
-                      <td style={{ padding: "8px 10px", fontWeight: 700, color: "#16A34A" }}>RD$ {r.paid.toLocaleString()}</td>
-                      <td style={{ padding: "8px 10px" }}><StatusBadge variant="success" label="Confirmado" /></td>
-                    </tr>
+                    {payments.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: "12px 10px", color: "#94A3B8", textAlign: "center" }}>Sin transacciones registradas</td>
+                      </tr>
+                    ) : payments.map((p, i) => {
+                      const ps = paymentStatusConf[p.status];
+                      return (
+                        <tr key={i} style={{ borderTop: "1px solid #F1F5F9" }}>
+                          <td style={{ padding: "8px 10px", color: "#475569" }}>{p.date}</td>
+                          <td style={{ padding: "8px 10px", color: "#0F172A" }}>{paymentTypeLabel[p.type]}</td>
+                          <td style={{ padding: "8px 10px", color: "#475569" }}>{p.paypalTxnId ? `PayPal · ${p.paypalTxnId}` : "—"}</td>
+                          <td style={{ padding: "8px 10px", fontWeight: 700, color: p.type === "refund" ? "#F13540" : "#16A34A" }}>{formatDOP(p.amount)}</td>
+                          <td style={{ padding: "8px 10px" }}><StatusBadge variant={ps.variant} label={ps.label} /></td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -224,16 +250,21 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
               {/* Payment links */}
               <div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Links de pago generados</div>
-                {payLinks.map(l => (
-                  <div key={l.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 6, fontSize: 12 }}>
-                    <Link size={12} color="#92400E" />
-                    <span style={{ fontWeight: 600, color: "#92400E" }}>{l.id}</span>
-                    <span style={{ color: "#475569" }}>{l.amount}</span>
-                    <span style={{ color: "#94A3B8" }}>Expira {l.expiresAt}</span>
-                    <StatusBadge variant="warning" label="Pendiente" />
-                    <button style={{ marginLeft: "auto", fontSize: 11, color: "#006CFE", border: "none", background: "transparent", cursor: "pointer" }}>Copiar link</button>
-                  </div>
-                ))}
+                {links.length === 0 ? (
+                  <div style={{ fontSize: 12, color: "#94A3B8" }}>Sin links generados</div>
+                ) : links.map((l, i) => {
+                  const ls = linkStatusConf[l.status];
+                  return (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 6, fontSize: 12, marginBottom: 6 }}>
+                      <Link size={12} color="#92400E" />
+                      <span style={{ fontWeight: 600, color: "#92400E" }}>{l.invoiceId ?? "—"}</span>
+                      <span style={{ color: "#475569" }}>{formatDOP(l.amount)}</span>
+                      <span style={{ color: "#94A3B8" }}>Expira {l.expiresAt}</span>
+                      <StatusBadge variant={ls.variant} label={ls.label} />
+                      <button style={{ marginLeft: "auto", fontSize: 11, color: "#006CFE", border: "none", background: "transparent", cursor: "pointer" }}>Copiar link</button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -282,9 +313,9 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
             <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>Resumen</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
-                { label: "Total",   val: `RD$ ${r.total.toLocaleString()}`,   bold: true  },
-                { label: "Pagado",  val: `RD$ ${r.paid.toLocaleString()}`,  color: "#16A34A" },
-                { label: "Saldo",   val: `RD$ ${saldo.toLocaleString()}`,     color: saldo > 0 ? "#F13540" : "#475569" },
+                { label: "Total",   val: formatDOP(total),  bold: true  },
+                { label: "Pagado",  val: formatDOP(paid),   color: "#16A34A" },
+                { label: "Saldo",   val: formatDOP(saldo),  color: saldo > 0 ? "#F13540" : "#475569" },
               ].map(row => (
                 <div key={row.label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                   <span style={{ color: "#475569" }}>{row.label}</span>
@@ -296,7 +327,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
             {saldo > 0 ? (
               <div style={{ padding: "10px 12px", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 6, fontSize: 12, color: "#92400E" }}>
                 <div style={{ fontWeight: 600, marginBottom: 2 }}>Próxima acción</div>
-                Enviar link de pago de saldo pendiente (RD$ {saldo.toLocaleString()})
+                Enviar link de pago de saldo pendiente ({formatDOP(saldo)})
               </div>
             ) : (
               <div style={{ padding: "10px 12px", background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 6, fontSize: 12, color: "#15803D" }}>
@@ -339,7 +370,7 @@ export function ReservaDetalle({ reserva: r, onBack }: Props) {
                 <span style={{ fontSize: 16 }}>🤝</span>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{r.operator}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{operatorName}</div>
                 <div style={{ fontSize: 11, color: "#94A3B8" }}>Contactar antes del tour</div>
               </div>
             </div>

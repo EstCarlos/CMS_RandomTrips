@@ -1,11 +1,11 @@
-import { ClipboardList, DollarSign, CalendarDays, AlertTriangle, CheckCircle2, Clock, ChevronRight, XCircle } from "lucide-react";
+import { ClipboardList, DollarSign, CalendarDays, AlertTriangle, CheckCircle2, Clock, ChevronRight, XCircle, MessageSquare } from "lucide-react";
 import type { Page } from "../layout/Sidebar";
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { KPICard } from "../ui/KPICard";
 import { StatusBadge } from "../ui/StatusBadge";
 import {
   TOURS_DATA, AVAILABILITY, BOOKINGS, CUSTOMERS, PAYMENTS,
-  PAYMENT_LINKS, TOTAL_COBRADO, TOTAL_SALDO, BOOKINGS_ACTIVAS,
+  PAYMENT_LINKS, QUOTES, TOTAL_COBRADO, TOTAL_SALDO, BOOKINGS_ACTIVAS,
   SALDOS_VENCIDOS, SALDOS_POR_VENCER, formatDOP, getTourPriceDisplay,
 } from "../../data/realData";
 
@@ -22,6 +22,9 @@ const trendData = [
   { mes: "May", reservas: 16, ingresos: 3040000 },
   { mes: "Jun", reservas: BOOKINGS_ACTIVAS, ingresos: TOTAL_COBRADO },
 ];
+
+/* ── Derived KPI values ─────────────────────────────────── */
+const pendingQuotes = QUOTES.filter(q => q.status === "pending").length;
 
 /* ── Alerts derived from real payment data ──────────────── */
 const PICO_AV  = AVAILABILITY[0];
@@ -55,6 +58,19 @@ SALDOS_POR_VENCER.forEach(link => {
     title: `Saldo pendiente — ${bk.id}`,
     text:  `${cust.name} · ${tour.title.es} · ${formatDOP(link.amount)} · Vence ${link.expiresAt}${link.reminders.length ? " · Último rec. " + link.reminders.at(-1) : ""}`,
   });
+});
+
+// Cotizaciones pendientes >48h
+QUOTES.filter(q => q.status === "pending" && q.createdAt).forEach(q => {
+  const hoursAgo = Math.floor((Date.now() - new Date(q.createdAt!).getTime()) / 3600000);
+  if (hoursAgo > 48) {
+    alerts.push({
+      type: "warning",
+      icon: <MessageSquare size={14} />,
+      title: `Cotización sin respuesta — ${q.id}`,
+      text: `${q.contact.name ?? "—"} · ${q.requestedDestinations.join(", ")} · ${hoursAgo}h sin respuesta`,
+    });
+  }
 });
 
 // Cupos info
@@ -111,7 +127,7 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: Page) => void })
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, sans-serif" }}>
 
       {/* Row 1: KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16 }}>
         <KPICard
           label="Reservas activas"
           value={String(BOOKINGS_ACTIVAS)}
@@ -145,6 +161,14 @@ export function Dashboard({ onNavigate }: { onNavigate?: (page: Page) => void })
           deltaLabel="fechas abiertas"
           icon={<CalendarDays size={18} color="#9333EA" />}
           iconBg="#F5F3FF"
+        />
+        <KPICard
+          label="Cotizaciones pendientes"
+          value={String(pendingQuotes)}
+          delta={0}
+          deltaLabel={pendingQuotes > 0 ? `${pendingQuotes} requieren respuesta` : "Al día"}
+          icon={<MessageSquare size={18} color="#F13540" />}
+          iconBg="#FEF2F2"
         />
       </div>
 

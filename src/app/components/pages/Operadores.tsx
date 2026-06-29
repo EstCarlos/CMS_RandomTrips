@@ -4,99 +4,41 @@ import { StatusBadge } from "../ui/StatusBadge";
 import { FilterBar } from "../ui/FilterBar";
 import { FormField, Input, SelectField, Textarea } from "../ui/FormField";
 import { Btn } from "../ui/Modal";
+import type { Operator } from "../../data/types";
+import { OPERATORS, TOURS_DATA, BOOKINGS, formatDOP, CMS_USERS } from "../../data/realData";
 
-/* ── Types & mock ───────────────────────────────────────── */
-interface Operador {
-  id: string;
-  name: string;
-  type: "interno" | "externo";
-  contact: string;
-  email: string;
-  telefono: string;
-  zone: string;
-  commission: string;
+/* ── Enriched operator (central type + computed display fields) ── */
+interface EnrichedOperator extends Operator {
   numTours: number;
   activeBookings: number;
-  rating: number;
   monthlyRevenue: number;
   monthlyBookings: number;
-  status: "active" | "seasonal" | "review" | "inactive";
-  assignedTours: string[];
+  assignedTourNames: string[];
+  zone: string;
+  commission: string;
+  // TODO: replace with real values when reviews/commission module is built
+  rating: number;
   notes: string;
 }
 
-const TOURS_CATALOG = [
-  "Isla Saona Full Day", "Cascadas El Limón", "Whale Watching Samaná",
-  "Los Haitises Ecoturismo", "Santo Domingo City Tour", "Puerto Plata Adventure",
-  "Jarabacoa Rafting", "Laguna Bavaro & Snorkel", "Tiburones Ballenas", "Cuevas del Pomier",
-];
+const enrichedOperators: EnrichedOperator[] = OPERATORS.map(op => {
+  const opBookings = BOOKINGS.filter(b => b.operatorId === op.id);
+  const opTours    = TOURS_DATA.filter(t => t.operatorId === op.id);
+  return {
+    ...op,
+    numTours:          opTours.length,
+    activeBookings:    opBookings.filter(b => b.status !== "cancelled" && b.status !== "completed").length,
+    monthlyRevenue:    opBookings.reduce((s, b) => s + b.depositPaid, 0),
+    monthlyBookings:   opBookings.length,
+    assignedTourNames: opTours.map(t => t.title.es),
+    zone:              op.type === "internal" ? "Nacional" : "Por definir",
+    commission:        op.type === "internal" ? "N/A" : "Por definir",
+    rating:            4.8,
+    notes:             "",
+  };
+});
 
-const mockOperadores: Operador[] = [
-  {
-    id: "OP-001", name: "Caribe Tours", type: "externo", contact: "Pedro Rosario",
-    email: "pedro@caribetours.com", telefono: "+1 809 555 1000", zone: "La Romana / Bayahibe",
-    commission: "15%", numTours: 8, activeBookings: 34, rating: 4.9,
-    monthlyRevenue: 890000, monthlyBookings: 34, status: "active",
-    assignedTours: ["Isla Saona Full Day", "Laguna Bavaro & Snorkel"],
-    notes: "Operador premium. Prioridad en asignación.",
-  },
-  {
-    id: "OP-002", name: "Aventura RD", type: "externo", contact: "María Santos",
-    email: "maria@aventurard.com", telefono: "+1 809 555 2000", zone: "Samaná",
-    commission: "12%", numTours: 6, activeBookings: 21, rating: 4.7,
-    monthlyRevenue: 510000, monthlyBookings: 21, status: "active",
-    assignedTours: ["Cascadas El Limón", "Los Haitises Ecoturismo"],
-    notes: "",
-  },
-  {
-    id: "OP-003", name: "Colonial Tours", type: "externo", contact: "Luis Fernández",
-    email: "luis@colonialtours.com.do", telefono: "+1 809 555 3000", zone: "Santo Domingo",
-    commission: "10%", numTours: 5, activeBookings: 18, rating: 4.5,
-    monthlyRevenue: 320000, monthlyBookings: 18, status: "active",
-    assignedTours: ["Santo Domingo City Tour", "Cuevas del Pomier"],
-    notes: "",
-  },
-  {
-    id: "OP-004", name: "Samaná Whale Tours", type: "externo", contact: "Ana Jiménez",
-    email: "ana@whalesamana.com", telefono: "+1 809 555 4000", zone: "Samaná",
-    commission: "18%", numTours: 3, activeBookings: 12, rating: 4.8,
-    monthlyRevenue: 480000, monthlyBookings: 12, status: "seasonal",
-    assignedTours: ["Whale Watching Samaná", "Tiburones Ballenas"],
-    notes: "Operativo solo ene–mar (temporada ballenas).",
-  },
-  {
-    id: "OP-005", name: "Eco Caribe", type: "externo", contact: "Roberto Vargas",
-    email: "r.vargas@ecocaribe.do", telefono: "+1 809 555 5000", zone: "Samaná / Hato Mayor",
-    commission: "14%", numTours: 4, activeBookings: 9, rating: 4.6,
-    monthlyRevenue: 290000, monthlyBookings: 9, status: "active",
-    assignedTours: ["Los Haitises Ecoturismo"],
-    notes: "",
-  },
-  {
-    id: "OP-006", name: "Norte Tours", type: "externo", contact: "Carmen López",
-    email: "carmen@nortetours.com", telefono: "+1 809 555 6000", zone: "Puerto Plata",
-    commission: "12%", numTours: 5, activeBookings: 8, rating: 4.4,
-    monthlyRevenue: 240000, monthlyBookings: 8, status: "active",
-    assignedTours: ["Puerto Plata Adventure"],
-    notes: "",
-  },
-  {
-    id: "OP-007", name: "PC Excursiones", type: "externo", contact: "Felipe Marte",
-    email: "f.marte@pcexc.com", telefono: "+1 809 555 7000", zone: "Punta Cana",
-    commission: "10%", numTours: 7, activeBookings: 6, rating: 4.2,
-    monthlyRevenue: 160000, monthlyBookings: 6, status: "review",
-    assignedTours: ["Laguna Bavaro & Snorkel"],
-    notes: "En proceso de revisión por incidencia con cliente.",
-  },
-  {
-    id: "OP-008", name: "Montaña RD", type: "interno", contact: "Diego Castillo",
-    email: "diego@montanard.com", telefono: "+1 809 555 8000", zone: "Jarabacoa / Constanza",
-    commission: "0%", numTours: 4, activeBookings: 5, rating: 4.8,
-    monthlyRevenue: 130000, monthlyBookings: 5, status: "active",
-    assignedTours: ["Jarabacoa Rafting"],
-    notes: "Guía interno del equipo Random Trips.",
-  },
-];
+const TOURS_CATALOG = TOURS_DATA.map(t => ({ id: t.id, name: t.title.es }));
 
 const STATUS_CONF: Record<string, { variant: "success" | "warning" | "danger" | "neutral" | "info"; label: string }> = {
   active:   { variant: "success", label: "Activo"       },
@@ -108,21 +50,21 @@ const STATUS_CONF: Record<string, { variant: "success" | "warning" | "danger" | 
 /* ── Editor ─────────────────────────────────────────────── */
 type OpTab = "info" | "tours" | "usuarios" | "stats";
 
-function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => void }) {
+function OperadorEditor({ op, onBack }: { op: EnrichedOperator | null; onBack: () => void }) {
   const isNew = !op;
   const [tab, setTab] = useState<OpTab>("info");
-  const [o, setO] = useState<Operador>(op ?? {
-    id: "new", name: "", type: "externo", contact: "", email: "", telefono: "",
-    zone: "", commission: "10%", numTours: 0, activeBookings: 0, rating: 0,
-    monthlyRevenue: 0, monthlyBookings: 0, status: "active", assignedTours: [], notes: "",
+  const [o, setO] = useState<EnrichedOperator>(op ?? {
+    id: "new", name: "", type: "external", contact: {}, assignedTourIds: [], status: "active",
+    numTours: 0, activeBookings: 0, monthlyRevenue: 0, monthlyBookings: 0,
+    assignedTourNames: [], zone: "", commission: "Por definir", rating: 0, notes: "",
   });
 
-  const toggleTour = (t: string) => {
+  const toggleTour = (tourId: string) => {
     setO(prev => ({
       ...prev,
-      assignedTours: prev.assignedTours.includes(t)
-        ? prev.assignedTours.filter(x => x !== t)
-        : [...prev.assignedTours, t],
+      assignedTourIds: prev.assignedTourIds.includes(tourId)
+        ? prev.assignedTourIds.filter(x => x !== tourId)
+        : [...prev.assignedTourIds, tourId],
     }));
   };
 
@@ -133,9 +75,7 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
     { id: "stats",    label: "Estadísticas"        },
   ];
 
-  const mockCMSUsers = [
-    { id: "U-1", name: op?.contact || "—", email: op?.email || "—", lastLogin: "Hoy 09:14", role: "operador" },
-  ];
+  const opCmsUsers = CMS_USERS.filter(u => u.operatorId === op?.id);
 
   return (
     <div style={{ fontFamily: "Inter, sans-serif" }}>
@@ -178,15 +118,15 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
           </div>
           <FormField label="Tipo">
             <div style={{ display: "flex", gap: 8 }}>
-              {(["interno", "externo"] as const).map(t => (
+              {(["internal", "external"] as const).map(t => (
                 <button key={t} onClick={() => setO(p => ({ ...p, type: t }))} style={{
                   flex: 1, padding: "8px 12px", borderRadius: 6, cursor: "pointer",
                   border: `2px solid ${o.type === t ? "#006CFE" : "#E5E7EB"}`,
                   background: o.type === t ? "#EFF6FF" : "#FFFFFF",
                   color: o.type === t ? "#006CFE" : "#475569",
-                  fontSize: 13, fontWeight: o.type === t ? 600 : 400, textTransform: "capitalize",
+                  fontSize: 13, fontWeight: o.type === t ? 600 : 400,
                 }}>
-                  {t === "interno" ? "🏠 Interno" : "🤝 Externo"}
+                  {t === "internal" ? "🏠 Interno" : "🤝 Externo"}
                 </button>
               ))}
             </div>
@@ -195,13 +135,13 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
             <Input value={o.commission} onChange={v => setO(p => ({ ...p, commission: v }))} placeholder="15%" />
           </FormField>
           <FormField label="Persona de contacto" required>
-            <Input value={o.contact} onChange={v => setO(p => ({ ...p, contact: v }))} placeholder="Pedro Rosario" />
+            <Input value={o.contact?.name ?? ""} onChange={v => setO(p => ({ ...p, contact: { ...p.contact, name: v } }))} placeholder="Pedro Rosario" />
           </FormField>
           <FormField label="Email">
-            <Input value={o.email} onChange={v => setO(p => ({ ...p, email: v }))} type="email" placeholder="pedro@operador.com" />
+            <Input value={o.contact?.email ?? ""} onChange={v => setO(p => ({ ...p, contact: { ...p.contact, email: v } }))} type="email" placeholder="pedro@operador.com" />
           </FormField>
           <FormField label="Teléfono">
-            <Input value={o.telefono} onChange={v => setO(p => ({ ...p, telefono: v }))} placeholder="+1 809 555 0000" />
+            <Input value={o.contact?.phone ?? ""} onChange={v => setO(p => ({ ...p, contact: { ...p.contact, phone: v } }))} placeholder="+1 809 555 0000" />
           </FormField>
           <div style={{ gridColumn: "1 / -1" }}>
             <FormField label="Zona de operación">
@@ -209,7 +149,7 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
             </FormField>
           </div>
           <FormField label="Estado">
-            <SelectField value={o.status} onChange={v => setO(p => ({ ...p, status: v as Operador["status"] }))}
+            <SelectField value={o.status} onChange={v => setO(p => ({ ...p, status: v as EnrichedOperator["status"] }))}
               options={Object.entries(STATUS_CONF).map(([v, s]) => ({ value: v, label: s.label }))}
             />
           </FormField>
@@ -227,23 +167,26 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
           <div style={{ fontSize: 13, color: "#475569" }}>
             Selecciona los tours del catálogo que gestiona este operador.
           </div>
-          {o.assignedTours.length > 0 && (
+          {o.assignedTourIds.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {o.assignedTours.map(t => (
-                <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: "#EFF6FF", border: "1px solid #BFDBFE", fontSize: 12, color: "#1D4ED8" }}>
-                  {t}
-                  <button onClick={() => toggleTour(t)} style={{ border: "none", background: "transparent", cursor: "pointer", padding: 0, display: "flex" }}>
-                    <X size={11} color="#94A3B8" />
-                  </button>
-                </span>
-              ))}
+              {o.assignedTourIds.map(tid => {
+                const name = TOURS_CATALOG.find(t => t.id === tid)?.name ?? tid;
+                return (
+                  <span key={tid} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: "#EFF6FF", border: "1px solid #BFDBFE", fontSize: 12, color: "#1D4ED8" }}>
+                    {name}
+                    <button onClick={() => toggleTour(tid)} style={{ border: "none", background: "transparent", cursor: "pointer", padding: 0, display: "flex" }}>
+                      <X size={11} color="#94A3B8" />
+                    </button>
+                  </span>
+                );
+              })}
             </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
             {TOURS_CATALOG.map(t => {
-              const sel = o.assignedTours.includes(t);
+              const sel = o.assignedTourIds.includes(t.id);
               return (
-                <button key={t} onClick={() => toggleTour(t)} style={{
+                <button key={t.id} onClick={() => toggleTour(t.id)} style={{
                   display: "flex", alignItems: "center", gap: 10, padding: "12px 14px",
                   borderRadius: 8, border: `1.5px solid ${sel ? "#006CFE" : "#E5E7EB"}`,
                   background: sel ? "#EFF6FF" : "#FFFFFF", cursor: "pointer", textAlign: "left",
@@ -251,7 +194,7 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
                   <div style={{ width: 20, height: 20, borderRadius: 4, border: `2px solid ${sel ? "#006CFE" : "#CBD5E1"}`, background: sel ? "#006CFE" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     {sel && <span style={{ color: "#FFFFFF", fontSize: 12, fontWeight: 700 }}>✓</span>}
                   </div>
-                  <span style={{ fontSize: 13, color: sel ? "#006CFE" : "#0F172A", fontWeight: sel ? 600 : 400 }}>{t}</span>
+                  <span style={{ fontSize: 13, color: sel ? "#006CFE" : "#0F172A", fontWeight: sel ? 600 : 400 }}>{t.name}</span>
                 </button>
               );
             })}
@@ -276,11 +219,13 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
                 </tr>
               </thead>
               <tbody>
-                {mockCMSUsers.map(u => (
+                {opCmsUsers.length === 0 ? (
+                  <tr><td colSpan={5} style={{ padding: "24px", textAlign: "center", color: "#94A3B8", fontSize: 13 }}>Sin usuarios CMS vinculados</td></tr>
+                ) : opCmsUsers.map(u => (
                   <tr key={u.id}>
                     <td style={{ padding: "12px 14px", fontWeight: 500, fontSize: 13, color: "#0F172A" }}>{u.name}</td>
                     <td style={{ padding: "12px 14px", fontSize: 13, color: "#475569" }}>{u.email}</td>
-                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{u.lastLogin}</td>
+                    <td style={{ padding: "12px 14px", fontSize: 12, color: "#94A3B8" }}>{u.lastLogin ?? "—"}</td>
                     <td style={{ padding: "12px 14px" }}><StatusBadge variant="neutral" label="Operador" /></td>
                     <td style={{ padding: "12px 14px" }}>
                       <button style={{ fontSize: 12, color: "#F13540", border: "none", background: "transparent", cursor: "pointer" }}>Revocar acceso</button>
@@ -298,10 +243,10 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {[
-              { label: "Reservas este mes", value: o.monthlyBookings,                              icon: <Calendar size={16} color="#006CFE" />, bg: "#EFF6FF" },
-              { label: "Ingresos generados", value: `RD$ ${(o.monthlyRevenue/1000).toFixed(0)}k`, icon: <TrendingUp size={16} color="#16A34A" />, bg: "#F0FDF4" },
-              { label: "Tours activos",      value: o.numTours,                                    icon: <Package size={16} color="#9333EA" />, bg: "#F5F3FF" },
-              { label: "Rating promedio",    value: `⭐ ${o.rating}`,                             icon: <Star size={16} color="#F59E0B" />,   bg: "#FFFBEB" },
+              { label: "Reservas este mes",  value: o.monthlyBookings,                               icon: <Calendar size={16} color="#006CFE" />, bg: "#EFF6FF" },
+              { label: "Ingresos generados", value: o.monthlyRevenue > 0 ? formatDOP(o.monthlyRevenue) : "—", icon: <TrendingUp size={16} color="#16A34A" />, bg: "#F0FDF4" },
+              { label: "Tours activos",      value: o.numTours,                                      icon: <Package size={16} color="#9333EA" />, bg: "#F5F3FF" },
+              { label: "Rating promedio",    value: `⭐ ${o.rating}`,                               icon: <Star size={16} color="#F59E0B" />,    bg: "#FFFBEB" },
             ].map(k => (
               <div key={k.label} style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "16px 18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -317,10 +262,13 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
             ))}
           </div>
           <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, padding: "16px 20px" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 12 }}>Últimas reservas asignadas</div>
-            {["RT-2841 · Isla Saona · 18 Jun · 4 pax", "RT-2836 · Isla Saona · 20 Jun · 5 pax", "RT-2832 · Isla Saona · 16 Jun · 2 pax"].map(r => (
-              <div key={r} style={{ fontSize: 12, color: "#475569", padding: "6px 0", borderBottom: "1px solid #F1F5F9" }}>{r}</div>
-            ))}
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 12 }}>Tours asignados</div>
+            {o.assignedTourNames.length === 0
+              ? <div style={{ fontSize: 12, color: "#94A3B8" }}>Sin tours asignados</div>
+              : o.assignedTourNames.map(t => (
+                  <div key={t} style={{ fontSize: 12, color: "#475569", padding: "6px 0", borderBottom: "1px solid #F1F5F9" }}>{t}</div>
+                ))
+            }
           </div>
         </div>
       )}
@@ -339,11 +287,11 @@ function OperadorEditor({ op, onBack }: { op: Operador | null; onBack: () => voi
 export function Operadores() {
   const [search, setSearch]   = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [editor, setEditor]   = useState<{ open: boolean; op: Operador | null }>({ open: false, op: null });
+  const [editor, setEditor]   = useState<{ open: boolean; op: EnrichedOperator | null }>({ open: false, op: null });
 
   if (editor.open) return <OperadorEditor op={editor.op} onBack={() => setEditor({ open: false, op: null })} />;
 
-  const filtered = mockOperadores.filter(o => {
+  const filtered = enrichedOperators.filter(o => {
     const q = search.toLowerCase();
     const mSearch = !q || o.name.toLowerCase().includes(q) || o.zone.toLowerCase().includes(q);
     const mStatus = !filters.status || o.status === filters.status;
@@ -356,7 +304,7 @@ export function Operadores() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <FilterBar
           filters={[
-            { key: "type",   label: "Tipo",   type: "select", options: [{ value: "interno", label: "Interno" }, { value: "externo", label: "Externo" }] },
+            { key: "type",   label: "Tipo",   type: "select", options: [{ value: "internal", label: "Interno" }, { value: "external", label: "Externo" }] },
             { key: "status", label: "Estado", type: "select", options: Object.entries(STATUS_CONF).map(([v, s]) => ({ value: v, label: s.label })) },
           ]}
           values={filters}
@@ -391,11 +339,11 @@ export function Operadores() {
               >
                 <td style={{ padding: "12px 14px" }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{op.name}</div>
-                  <div style={{ fontSize: 11, color: "#94A3B8" }}>{op.contact} · {op.email}</div>
+                  <div style={{ fontSize: 11, color: "#94A3B8" }}>{op.contact?.name ?? "—"} · {op.contact?.email ?? "—"}</div>
                 </td>
                 <td style={{ padding: "12px 14px" }}>
-                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: op.type === "interno" ? "#F0FDF4" : "#F5F3FF", color: op.type === "interno" ? "#15803D" : "#7C3AED" }}>
-                    {op.type === "interno" ? "🏠 Interno" : "🤝 Externo"}
+                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: op.type === "internal" ? "#F0FDF4" : "#F5F3FF", color: op.type === "internal" ? "#15803D" : "#7C3AED" }}>
+                    {op.type === "internal" ? "🏠 Interno" : "🤝 Externo"}
                   </span>
                 </td>
                 <td style={{ padding: "12px 14px", fontSize: 12, color: "#475569" }}>{op.zone}</td>
