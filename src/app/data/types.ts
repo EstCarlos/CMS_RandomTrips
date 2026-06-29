@@ -241,6 +241,32 @@ export interface PaymentLink {
   reminders: string[];
 }
 
+// ── Quote calculator ───────────────────────────────────
+
+export type SplitMode = "perPax" | "fixed";
+
+export interface CostLine {
+  id: string;                    // nanoid or Date.now().toString()
+  description: string;           // "Transporte (guagua 15p)", "Entrada Parque"
+  amount: number;                // total cost of this line in DOP
+  splitMode: SplitMode;          // "perPax" = divide by capacity, "fixed" = flat add
+  minCapacity?: number;          // only for perPax: minimum bus/boat capacity
+                                 // if minCapacity > pax, extra seats cost is shown as absorbed
+}
+
+export interface QuoteCalculation {
+  baseTourId?: string;           // optional: tour from catalog used as base
+  basePricePerPerson: number;    // base price per person (from tour or manual entry)
+  costLines: CostLine[];         // variable cost lines added by partner
+  marginPercent: number;         // Random Trips margin (%), partner-adjustable, no default
+  pax: number;                   // snapshot of requested pax at calculation time
+  totalCost: number;             // computed: base + all costLine contributions (before margin)
+  totalWithMargin: number;       // computed: totalCost × (1 + marginPercent/100)
+  pricePerPerson: number;        // computed: totalWithMargin / pax
+  absorbedCost: number;          // computed: sum of costs absorbed due to minCapacity > pax
+  calculatedAt: string;          // ISO timestamp of last calculation
+}
+
 // ── Quote ──────────────────────────────────────────────
 
 export interface Quote {
@@ -260,6 +286,7 @@ export interface Quote {
   respondedAt?: string;
   createdAt?: string;
   communications?: { date: string; type: string; text: string }[];
+  calculation?: QuoteCalculation;
 }
 
 // ── Customer ───────────────────────────────────────────

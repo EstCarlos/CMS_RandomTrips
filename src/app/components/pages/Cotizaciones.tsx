@@ -1,13 +1,14 @@
 import { useState } from "react";
 import {
   ArrowLeft, Send, Clock, Mail, User, MapPin,
-  Calendar, Users, DollarSign, MessageSquare, Check, X,
+  Calendar, Users, DollarSign, MessageSquare, Check, X, Calculator,
 } from "lucide-react";
 import { StatusBadge } from "../ui/StatusBadge";
 import { FilterBar } from "../ui/FilterBar";
 import { FormField, Input, Textarea, SelectField } from "../ui/FormField";
 import { Btn } from "../ui/Modal";
-import type { Quote } from "../../data/types";
+import { QuoteCalculator } from "./QuoteCalculator";
+import type { Quote, QuoteCalculation } from "../../data/types";
 import { QUOTES, findUser, formatDOP } from "../../data/realData";
 
 /* ── Helpers ────────────────────────────────────────────── */
@@ -33,17 +34,39 @@ const STATUS_CONF = {
 };
 
 /* ── Cotización Detalle ─────────────────────────────────── */
-function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) {
+function CotizacionDetalle({ cot, onBack, onSave }: { cot: Quote; onBack: () => void; onSave: (q: Quote) => void }) {
   const [tourPropuesto, setTourPropuesto] = useState("");
-  const [precio, setPrecio] = useState("");
-  const [moneda, setMoneda] = useState("USD");
+  const [precio, setPrecio] = useState(cot.proposedPrice ? String(cot.proposedPrice) : "");
+  const [moneda, setMoneda] = useState<string>(cot.currency ?? "USD");
   const [notas, setNotas] = useState("");
   const [validez, setValidez] = useState("7");
   const [sent, setSent] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [localCalculation, setLocalCalculation] = useState<QuoteCalculation | undefined>(cot.calculation);
 
   const isPending = cot.status === "pending";
   const pendingHours = hoursAgo(cot.createdAt);
   const assignedName = findUser(cot.assignedToUserId ?? "")?.name ?? "—";
+
+  const handleCalculatorApply = (calc: QuoteCalculation) => {
+    setPrecio(String(Math.round(calc.totalWithMargin)));
+    setMoneda("DOP");
+    setLocalCalculation(calc);
+    setShowCalculator(false);
+  };
+
+  const handleSend = () => {
+    const updated: Quote = {
+      ...cot,
+      status: "sent",
+      proposedPrice: Number(precio),
+      currency: moneda as Quote["currency"],
+      calculation: localCalculation,
+      respondedAt: new Date().toISOString(),
+    };
+    onSave(updated);
+    setSent(true);
+  };
 
   return (
     <div style={{ fontFamily: "Inter, sans-serif" }}>
@@ -148,6 +171,49 @@ function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) 
               </div>
             </section>
           )}
+
+          {/* Desglose del precio (read-only) */}
+          {cot.calculation && (
+            <section style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
+              <div style={{ padding: "12px 16px", borderBottom: "1px solid #E5E7EB", display: "flex", alignItems: "center", gap: 6 }}>
+                <DollarSign size={13} color="#94A3B8" />
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", textTransform: "uppercase", letterSpacing: "0.06em" }}>Desglose del precio</span>
+              </div>
+              <div style={{ padding: "14px 16px", fontSize: 13, color: "#475569", display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>Base: {formatDOP(cot.calculation.basePricePerPerson)}/p × {cot.calculation.pax}p</span>
+                  <strong style={{ color: "#0F172A" }}>{formatDOP(cot.calculation.basePricePerPerson * cot.calculation.pax)}</strong>
+                </div>
+                {cot.calculation.costLines.map(l => (
+                  <div key={l.id} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                    <span>
+                      {l.description || "Línea de costo"}
+                      <span style={{ color: "#94A3B8" }}>
+                        {" · "}{l.splitMode === "fixed" ? "fijo" : `÷${l.minCapacity ?? cot.calculation!.pax}p`}
+                      </span>
+                    </span>
+                    <span style={{ color: "#0F172A", whiteSpace: "nowrap" }}>{formatDOP(l.amount)}</span>
+                  </div>
+                ))}
+                <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: 6, marginTop: 2, display: "flex", justifyContent: "space-between" }}>
+                  <span>Margen RT</span>
+                  <strong style={{ color: "#0F172A" }}>{cot.calculation.marginPercent}%</strong>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <strong style={{ color: "#0F172A", fontSize: 14 }}>Total</strong>
+                  <span style={{ textAlign: "right" }}>
+                    <strong style={{ color: "#0F172A", fontSize: 14 }}>{formatDOP(Math.round(cot.calculation.totalWithMargin))}</strong>
+                    <span style={{ color: "#94A3B8", fontSize: 12 }}> · {formatDOP(Math.round(cot.calculation.pricePerPerson))}/p</span>
+                  </span>
+                </div>
+                {cot.calculation.absorbedCost > 0 && (
+                  <div style={{ color: "#92400E", fontSize: 11, background: "#FEF3C7", border: "1px solid #FDE68A", borderRadius: 4, padding: "5px 8px", marginTop: 2 }}>
+                    ⚠️ Costo absorbido (cap. mínima): {formatDOP(Math.round(cot.calculation.absorbedCost))}
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
         </div>
 
         {/* RIGHT — Formulario de respuesta */}
@@ -185,9 +251,29 @@ function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) 
                       </select>
                       <input value={precio} onChange={e => setPrecio(e.target.value)}
                         placeholder="0.00" type="number"
-                        style={{ flex: 1, padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, outline: "none" }}
+                        style={{ flex: 1, padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, outline: "none", minWidth: 0 }}
                       />
                     </div>
+                    <button
+                      onClick={() => setShowCalculator(v => !v)}
+                      style={{
+                        marginTop: 8, width: "100%", padding: "8px 12px", borderRadius: 6,
+                        border: `1px solid ${showCalculator ? "#006CFE" : "#BFDBFE"}`,
+                        background: showCalculator ? "#006CFE" : "#EFF6FF",
+                        color: showCalculator ? "#FFFFFF" : "#006CFE",
+                        fontSize: 12, fontWeight: 600, cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      }}
+                    >
+                      <Calculator size={13} /> {showCalculator ? "Ocultar calculadora" : "Abrir calculadora de costos"}
+                    </button>
+                    {localCalculation && (
+                      <div style={{ fontSize: 11, color: "#64748B", marginTop: 6, lineHeight: 1.5 }}>
+                        Calculado el {new Date(localCalculation.calculatedAt).toLocaleDateString("es-DO")}
+                        {" · "}{localCalculation.costLines.length} línea(s) de costo
+                        {" · "}Margen {localCalculation.marginPercent}%
+                      </div>
+                    )}
                   </FormField>
 
                   <FormField label="Notas para el cliente">
@@ -208,7 +294,7 @@ function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) 
 
                   <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
                     <button
-                      onClick={() => setSent(true)}
+                      onClick={handleSend}
                       disabled={!precio}
                       style={{
                         width: "100%", padding: "10px", borderRadius: 6, border: "none",
@@ -230,6 +316,17 @@ function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) 
           </div>
         </div>
       </div>
+
+      {/* Calculator panel (inline, full-width) */}
+      {showCalculator && (
+        <div style={{ marginTop: 20 }}>
+          <QuoteCalculator
+            quote={cot}
+            onApply={handleCalculatorApply}
+            onClose={() => setShowCalculator(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -238,18 +335,24 @@ function CotizacionDetalle({ cot, onBack }: { cot: Quote; onBack: () => void }) 
 export function Cotizaciones({ isPartnerView = false }: { isPartnerView?: boolean }) {
   const [activeTab, setActiveTab] = useState<"pending" | "sent" | "accepted" | "rejected">("pending");
   const [search, setSearch] = useState("");
+  const [quotes, setQuotes] = useState<Quote[]>(QUOTES);
   const [detalle, setDetalle] = useState<Quote | null>(null);
 
-  if (detalle) return <CotizacionDetalle cot={detalle} onBack={() => setDetalle(null)} />;
-
-  const counts = {
-    pending:  QUOTES.filter(c => c.status === "pending").length,
-    sent:     QUOTES.filter(c => c.status === "sent").length,
-    accepted: QUOTES.filter(c => c.status === "accepted").length,
-    rejected: QUOTES.filter(c => c.status === "rejected").length,
+  const handleSaveQuote = (updated: Quote) => {
+    setQuotes(prev => prev.map(q => q.id === updated.id ? updated : q));
+    setDetalle(updated);
   };
 
-  const filtered = QUOTES.filter(c => {
+  if (detalle) return <CotizacionDetalle cot={detalle} onBack={() => setDetalle(null)} onSave={handleSaveQuote} />;
+
+  const counts = {
+    pending:  quotes.filter(c => c.status === "pending").length,
+    sent:     quotes.filter(c => c.status === "sent").length,
+    accepted: quotes.filter(c => c.status === "accepted").length,
+    rejected: quotes.filter(c => c.status === "rejected").length,
+  };
+
+  const filtered = quotes.filter(c => {
     const q = search.toLowerCase();
     const mTab    = c.status === activeTab;
     const mSearch = !q || (c.contact.name ?? "").toLowerCase().includes(q) || (c.contact.email ?? "").toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
@@ -263,7 +366,7 @@ export function Cotizaciones({ isPartnerView = false }: { isPartnerView?: boolea
     { id: "rejected", label: "Rechazadas" },
   ];
 
-  const pendingOver48 = QUOTES.filter(c => c.status === "pending" && (hoursAgo(c.createdAt) ?? 0) > 48);
+  const pendingOver48 = quotes.filter(c => c.status === "pending" && (hoursAgo(c.createdAt) ?? 0) > 48);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, sans-serif" }}>

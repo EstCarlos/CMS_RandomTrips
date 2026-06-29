@@ -1173,6 +1173,32 @@ export const QUOTES: Quote[] = [
     staffNotes: "Propuesto paquete montaña 5 días. Esperando respuesta. Se les ofreció incluir Pico Duarte.",
     createdAt: "2026-06-10T09:15:00Z",
     respondedAt: "2026-06-11T16:40:00Z",
+    calculation: {
+      baseTourId: undefined,
+      basePricePerPerson: 12000,
+      costLines: [
+        {
+          id: "cl-001",
+          description: "Transporte (guagua 15p)",
+          amount: 16000,
+          splitMode: "perPax",
+          minCapacity: 15,
+        },
+        {
+          id: "cl-002",
+          description: "Entradas Parque Nacional",
+          amount: 4800,
+          splitMode: "fixed",
+        },
+      ],
+      marginPercent: 18,
+      pax: 8,
+      totalCost: 118400,       // (12000 × 8) + (16000/15 × 8) + 4800
+      totalWithMargin: 139712, // totalCost × 1.18
+      pricePerPerson: 17464,   // totalWithMargin / 8
+      absorbedCost: 7467,      // (15-8)/15 × 16000
+      calculatedAt: "2026-06-11T15:30:00Z",
+    },
   },
   {
     id: "qt-003",
@@ -1190,6 +1216,38 @@ export const QUOTES: Quote[] = [
     staffNotes: "Confirmado. Booking creado: BK-007. Coordinar transporte con Caribe Adventures.",
     createdAt: "2026-06-05T11:00:00Z",
     respondedAt: "2026-06-06T10:20:00Z",
+    calculation: {
+      baseTourId: undefined,
+      basePricePerPerson: 9000,
+      costLines: [
+        {
+          id: "cl-101",
+          description: "Transporte (autobús 18p desde SDQ)",
+          amount: 28000,
+          splitMode: "perPax",
+          minCapacity: 18,
+        },
+        {
+          id: "cl-102",
+          description: "Almuerzo grupal + coffee break",
+          amount: 18000,
+          splitMode: "fixed",
+        },
+        {
+          id: "cl-103",
+          description: "Facilitador teambuilding",
+          amount: 12000,
+          splitMode: "fixed",
+        },
+      ],
+      marginPercent: 15,
+      pax: 15,
+      totalCost: 198333,       // (9000 × 15) + (28000/18 × 15) + 18000 + 12000
+      totalWithMargin: 228083, // totalCost × 1.15
+      pricePerPerson: 15206,   // totalWithMargin / 15
+      absorbedCost: 4667,      // (18-15)/18 × 28000
+      calculatedAt: "2026-06-06T09:50:00Z",
+    },
   },
   {
     id: "qt-004",
