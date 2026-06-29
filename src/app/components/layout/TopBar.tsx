@@ -22,9 +22,10 @@ interface TopBarProps {
   actions?: React.ReactNode;
   userName: string;
   userRole: string;
+  onLogout?: () => void;
 }
 
-export function TopBar({ title, breadcrumbs, actions, userName, userRole }: TopBarProps) {
+export function TopBar({ title, breadcrumbs, actions, userName, userRole, onLogout }: TopBarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [notifications, setNotifications] = useState(mockNotifications);
@@ -235,13 +236,15 @@ export function TopBar({ title, breadcrumbs, actions, userName, userRole }: TopB
               </button>
             ))}
             <div style={{ borderTop: "1px solid #E5E7EB" }} />
-            <button style={{
-              display: "flex", alignItems: "center", gap: 8,
-              width: "100%", padding: "10px 14px",
-              border: "none", background: "transparent",
-              cursor: "pointer", fontSize: 13, color: "#F13540",
-              textAlign: "left",
-            }}
+            <button
+              onClick={() => { setShowUserMenu(false); onLogout?.(); }}
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                width: "100%", padding: "10px 14px",
+                border: "none", background: "transparent",
+                cursor: "pointer", fontSize: 13, color: "#F13540",
+                textAlign: "left",
+              }}
               onMouseEnter={(e) => { e.currentTarget.style.background = "#FEF2F2"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
             >

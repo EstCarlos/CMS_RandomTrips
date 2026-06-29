@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Toaster } from "sonner";
 import { Sidebar, Page, UserRole } from "./components/layout/Sidebar";
 import { TopBar } from "./components/layout/TopBar";
+import { LoginPage } from "./components/pages/LoginPage";
 
 /* ── Pages: Catálogo ─── */
 import { Dashboard } from "./components/pages/Dashboard";
@@ -63,42 +64,6 @@ const PAGE_META: Record<string, { title: string; breadcrumbs?: string[] }> = {
   "mis-reservas":      { title: "Mis Reservas" },
   "mi-perfil":         { title: "Mi Perfil" },
 };
-
-/* ── Role switcher (demo only) ─────────────────────────── */
-const ROLE_LABELS: Record<UserRole, string> = {
-  admin:    "Admin",
-  staff:    "Staff",
-  operator: "Operador",
-  partner:  "Socio",
-};
-
-function RoleSwitcher({ role, onSwitch }: { role: UserRole; onSwitch: (r: UserRole) => void }) {
-  return (
-    <div style={{
-      position: "fixed", bottom: 16, right: 16, zIndex: 300,
-      background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 8,
-      padding: "8px 12px", boxShadow: "0 4px 16px rgba(0,0,0,.1)",
-      fontFamily: "Inter, sans-serif",
-    }}>
-      <div style={{ fontSize: 9, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginBottom: 4 }}>
-        Vista demo
-      </div>
-      <div style={{ display: "flex", gap: 4 }}>
-        {(["admin", "staff", "operator", "partner"] as UserRole[]).map(r => (
-          <button key={r} onClick={() => onSwitch(r)} style={{
-            padding: "4px 8px", borderRadius: 4, border: "none",
-            background: role === r ? "#006CFE" : "#F1F5F9",
-            color: role === r ? "#FFFFFF" : "#475569",
-            fontSize: 11, fontWeight: role === r ? 600 : 400,
-            cursor: "pointer",
-          }}>
-            {ROLE_LABELS[r]}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 /* ── Page renderer ─────────────────────────────────────── */
 function PageContent({
@@ -168,12 +133,29 @@ function PageContent({
 
 /* ── App ───────────────────────────────────────────────── */
 export default function App() {
-  const [currentPage, setCurrentPage]   = useState<string>("dashboard");
-  const [userRole, setUserRole]         = useState<UserRole>("admin");
+  const [currentPage, setCurrentPage]     = useState<string>("dashboard");
+  const [userRole, setUserRole]           = useState<UserRole>("admin");
+  const [userName, setUserName]           = useState<string>("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [editingTourId, setEditingTourId] = useState<string | null>(null);
 
   const isEditorOpen = currentPage === "tour-editor";
   const meta = PAGE_META[currentPage] ?? { title: currentPage };
+
+  const handleLogin = (role: UserRole, name: string) => {
+    setUserRole(role);
+    setUserName(name);
+    setCurrentPage(role === "partner" ? "cotizaciones" : "dashboard");
+    setEditingTourId(null);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentPage("dashboard");
+    setEditingTourId(null);
+    setUserName("");
+  };
 
   const handleNavigate = (page: Page) => {
     setCurrentPage(page);
@@ -185,11 +167,16 @@ export default function App() {
     setCurrentPage("tour-editor");
   };
 
-  const handleRoleSwitch = (role: UserRole) => {
-    setUserRole(role);
-    setCurrentPage(role === "partner" ? "cotizaciones" : "dashboard");
-    setEditingTourId(null);
-  };
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Toaster position="top-right" richColors />
+        <LoginPage onLogin={handleLogin} />
+      </>
+    );
+  }
+
+  const roleLabel = userRole === "admin" ? "Administrador" : userRole === "staff" ? "Staff" : userRole === "operator" ? "Operador" : "Socio";
 
   return (
     <div style={{ background: "#F7F8FA", minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
@@ -199,7 +186,7 @@ export default function App() {
         currentPage={isEditorOpen ? "tours" : currentPage as Page}
         onNavigate={handleNavigate}
         userRole={userRole}
-        userName={userRole === "operator" || userRole === "partner" ? "Carlos Domínguez" : "Alejandra Torres"}
+        userName={userName}
       />
 
       <div style={{ marginLeft: 240, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -207,8 +194,9 @@ export default function App() {
           <TopBar
             title={meta.title}
             breadcrumbs={meta.breadcrumbs}
-            userName={userRole === "operator" || userRole === "partner" ? "Carlos Domínguez" : "Alejandra Torres"}
-            userRole={userRole === "admin" ? "Administrador" : userRole === "staff" ? "Staff" : userRole === "operator" ? "Operador" : "Socio"}
+            userName={userName}
+            userRole={roleLabel}
+            onLogout={handleLogout}
           />
         )}
 
@@ -225,8 +213,6 @@ export default function App() {
           )}
         </main>
       </div>
-
-      <RoleSwitcher role={userRole} onSwitch={handleRoleSwitch} />
     </div>
   );
 }
