@@ -162,9 +162,10 @@ Estamos en **Frente 1 — Cerrar UI gaps del CMS**. Sub-bloques:
 - [x] **01 — Tab Itinerario para tours multiDay** (`docs/tareas/01-itinerario-multidia.md`)
 - [x] **02 — Refactor naming to English** — camelCase + bilingual objects `{ es, en }` + English enums (`docs/tareas/02-refactor-naming-to-english.md`)
 - [x] **03 — Handlers vacíos del TourEditor** — SEO, galería, operador selector (`docs/tareas/03-empty-handlers.md`)
-- [ ] **04 — Data placeholder faltante** — Quotes, CMS Users, AuditLog, FAQ → centralizar en realData.ts (`docs/tareas/04-missing-placeholder-data.md`)
-- [ ] **05 — Auditoría de páginas stub** — revisar cada página, completar las incompletas
-- [ ] **06 — Pasada de simplificación UX** — revisar flujos desde óptica del socio no-técnico
+- [x] **04 — Data placeholder faltante** — Quotes, CMS Users, AuditLog, FAQ → centralizar en realData.ts (`docs/tareas/04-missing-placeholder-data.md`)
+- [x] **05 — Auditoría de páginas stub** — revisar cada página, completar las incompletas
+- [] **06 — Pasada de simplificación UX** — revisar flujos desde óptica del socio no-técnico
+- [x] **07 — Calculadora de cotización** — desglose de costos variables + margen en el flujo de Cotizaciones (`docs/tareas/07-quote-calculator.md`)
 Después de cerrar Frente 1 sigue **Fase 4 — Arquitectura backend** (AWS Serverless + DynamoDB + API contracts + PayPal + Cognito + costos).
  
 ## Qué NO tocar
